@@ -24,9 +24,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
+
 path = raw_input("Please provide the full address of meshes directory " + \
                  "(please don't use relative path but full path e.g " + \
-                 "/home/rafael/Desktop/...): ")
+                 "/home/rafael/Desktop/...) or EMPTY to use current directory: ")
+
+if path is "":
+    # Will return the current working direcotry
+    path = os.getcwd()
 
 full_path = "file://" + path
 
