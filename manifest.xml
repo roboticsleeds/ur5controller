@@ -1,0 +1,17 @@
+<package>
+  <description brief="Connects vicon output to OpenRAVE.">
+        Openrave plugin that connects vicon output to openrave.
+  </description>
+  <author>Mehmet Dogar (mdogar@mit.edu)</author>
+  <license>BSD</license>
+  <depend package="roscpp"/>
+  <depend package="openrave"/>
+  <depend package="std_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="tf"/>
+  <export>
+      <python path="${prefix}/pythonsrc"/>
+      <openrave plugins="${prefix}/lib"/>
+  </export>
+</package>
+
