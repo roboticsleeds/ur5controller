@@ -5,10 +5,19 @@ of a UR5 in OpenRAVE either from a real, physical, robot or through a simulation
 ## Includes
 This repository includes the following:
 - The custom written controller for OpenRAVE and UR5 robot.
-- The URDF and SRDF files to load UR5 model into 
+- The URDF and SRDF files to load UR5 model into
+
+## Other dependencies
+```bash
+sudo apt-get install ros-indigo-brics-actuator
+```
+
+```
+sudo apt-get install ros-indigo-universal-robot
+```
 
 ## How to install
-The installation of this project requires some prerequisites. 
+The installation of this project requires some prerequisites.
 
 1. You need to install and configure another OpenRAVE plugin called `or_urdf` this plugin is available [here](https://github.com/personalrobotics/or_urdf)
 I have written a blog post on how to install this plugin if you struggle to find a solution, find the tutorial [here]().
@@ -32,7 +41,7 @@ rosmake instead of catkin_make. I suggest that you:
      within this new directory.
      - Once you run it a `ur5.urdf` file should be generated containing all the information needed with the hard-coded URI paths
      that the Python script have created for you.
-   
+
 # Testng the controller
 There is a file called `test_ur5.py` that you can run and test the controller:
 
