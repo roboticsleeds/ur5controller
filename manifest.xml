@@ -7,6 +7,7 @@
   <depend package="roscpp"/>
   <depend package="openrave"/>
   <depend package="std_msgs"/>
+  <depend package="trajectory_msgs"/>
   <depend package="brics_actuator"/>
   <depend package="geometry_msgs"/>
   <depend package="tf"/>

@@ -3,6 +3,7 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "sensor_msgs/JointState.h"
+#include "trajectory_msgs/JointTrajectory.h"
 #include "brics_actuator/JointValue.h"
 #include "brics_actuator/JointPositions.h"
 #include "plugindefs.h"
@@ -89,7 +90,7 @@ class Ur5Controller : public ControllerBase
 
 			_pn = new ros::NodeHandle();
 			_joint_angles_sub = _pn->subscribe("/joint_states", 1, &Ur5Controller::JointStateCallback, this);
-			_move_arm_pub = _pn->advertise<brics_actuator::JointPositions>("/joint_path_command", 1);
+			_move_arm_pub = _pn->advertise<trajectory_msgs::JointTrajectory>("/arm_controller/command", 1);
 
 			// Class attribute indicating that the classs has been intialised.
 			_initialized = true;
@@ -170,28 +171,54 @@ class Ur5Controller : public ControllerBase
 						// {
 						// 		values[i] += _offset.at(i);
 						// }
+						trajectory_msgs::JointTrajectory joint_state;
+
+           joint_state.header.stamp = ros::Time::now();
+           joint_state.header.frame_id = "test";
+           joint_state.joint_names.resize(6);
+           joint_state.points.resize(6);
+
+           joint_state.joint_names[0] ="elbow_joint";
+           joint_state.joint_names[1] ="shoulder_lift_joint";
+           joint_state.joint_names[2] ="shoulder_pan_joint";
+					 joint_state.joint_names[2] ="wrist_1_joint";
+					 joint_state.joint_names[2] ="wrist_2_joint";
+					 joint_state.joint_names[2] ="wrist_3_joint";
 
 
-						brics_actuator::JointPositions command;
-						vector <brics_actuator::JointValue> armJointPositions(6);
-						vector <std::string> armJointNames(6);
-						armJointNames[0] = "elbow_joint";
-						armJointNames[1] = "shoulder_lift_joint";
-						armJointNames[2] = "shoulder_pan_joint";
-						armJointNames[3] = "wrist_1_joint";
-						armJointNames[4] = "wrist_2_joint";
-						armJointNames[5] = "wrist_3_joint";
+           size_t size = 5;
+           for(size_t i=0;i<=size;i++) {
+              trajectory_msgs::JointTrajectoryPoint points_n;
+              int j = i%6;
+              points_n.positions.push_back(values[i]);
+              // points_n.positions.push_back(j+1);
+              // points_n.positions.push_back(j*2);
+              joint_state.points.push_back(points_n);
+              joint_state.points[i].time_from_start = ros::Duration(0.01);
+           }
 
-						for (int i = 0; i < 5; ++i)
-						{
-								armJointPositions[i].joint_uri = armJointNames[i].c_str();
-								armJointPositions[i].value = values[i];
-								armJointPositions[i].unit = std::string("rad");
-						}
-
-						command.positions = armJointPositions;
+						//
+						// trajectory_msgs::JointTrajectory command;
+						// vector <float> armJointPositions(6);
+						//
+						//
+						// vector <std::string> armJointNames(6);
+						// armJointNames[0] = "elbow_joint";
+						// armJointNames[1] = "shoulder_lift_joint";
+						// armJointNames[2] = "shoulder_pan_joint"command;
+						// armJointNames[3] = "wrist_1_joint";
+						// armJointNames[4] = "wrist_2_joint";
+						// armJointNames[5] = "wrist_3_joint";
+						//
+						// for (int i = 0; i < 6; ++i)
+						// {
+						// 		armJointPositions[i] = values[i];
+						// }
+						// command.joint_names.resize(6);
+						// // command.joint_names = armJointNames;
+						// command.points[0].positions = armJointPositions;
 						ROS_INFO("the values are %f %f %f %f %f", values[0], values[1], values[2], values[3], values[4]);
-						_move_arm_pub.publish(command);
+						_move_arm_pub.publish(joint_state);
 
 						// Store last values for later.
 						// _last_arm_command = values;
