@@ -1,6 +1,7 @@
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ros/ros.h"
+#include "ros/time.h"
 #include "std_msgs/String.h"
 #include "sensor_msgs/JointState.h"
 #include "trajectory_msgs/JointTrajectory.h"
@@ -171,31 +172,30 @@ class Ur5Controller : public ControllerBase
 						// {
 						// 		values[i] += _offset.at(i);
 						// }
-						trajectory_msgs::JointTrajectory joint_state;
+					 trajectory_msgs::JointTrajectory traj;
+					 trajectory_msgs::JointTrajectoryPoint points_n;
 
-           joint_state.header.stamp = ros::Time::now();
-           joint_state.header.frame_id = "test";
-           joint_state.joint_names.resize(6);
-           joint_state.points.resize(6);
+           traj.header.stamp = ros::Time::now();
+           traj.header.frame_id = "base_link";
+           traj.joint_names.resize(6);
+           traj.points.resize(1);
 
-           joint_state.joint_names[0] ="elbow_joint";
-           joint_state.joint_names[1] ="shoulder_lift_joint";
-           joint_state.joint_names[2] ="shoulder_pan_joint";
-					 joint_state.joint_names[2] ="wrist_1_joint";
-					 joint_state.joint_names[2] ="wrist_2_joint";
-					 joint_state.joint_names[2] ="wrist_3_joint";
+					 traj.points[0].positions.resize(6);
 
+           traj.joint_names[0] ="elbow_joint";
+           traj.joint_names[1] ="shoulder_lift_joint";
+           traj.joint_names[2] ="shoulder_pan_joint";
+					 traj.joint_names[3] ="wrist_1_joint";
+					 traj.joint_names[4] ="wrist_2_joint";
+					 traj.joint_names[5] ="wrist_3_joint";
 
-           size_t size = 5;
-           for(size_t i=0;i<=size;i++) {
-              trajectory_msgs::JointTrajectoryPoint points_n;
-              int j = i%6;
-              points_n.positions.push_back(values[i]);
-              // points_n.positions.push_back(j+1);
-              // points_n.positions.push_back(j*2);
-              joint_state.points.push_back(points_n);
-              joint_state.points[i].time_from_start = ros::Duration(0.01);
+					 int i(100);
+
+           for(size_t j = 0; j < 6; j++) {
+						 traj.points[0].positions[j] = values[j];
            }
+
+					 traj.points[0].time_from_start = ros::Duration(1);
 
 						//
 						// trajectory_msgs::JointTrajectory command;
@@ -218,7 +218,7 @@ class Ur5Controller : public ControllerBase
 						// // command.joint_names = armJointNames;
 						// command.points[0].positions = armJointPositions;
 						ROS_INFO("the values are %f %f %f %f %f", values[0], values[1], values[2], values[3], values[4]);
-						_move_arm_pub.publish(joint_state);
+						_move_arm_pub.publish(traj);
 
 						// Store last values for later.
 						// _last_arm_command = values;
