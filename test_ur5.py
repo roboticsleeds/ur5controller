@@ -22,16 +22,23 @@ env.Add(robot,True)
 probotcontroller = RaveCreateController(env,'ur5controller')
 robot.SetController(probotcontroller)
 
-print(robot.GetTransform())
 
-# position: [-7.104050955497598e-05, 6.690283570076616e-05, 0.0004613414283554107, 5.438328769979961e-05, 2.811695286197846e-05, 1.649085228461189e-05]
-print("Test 1")
-manipprob = interfaces.BaseManipulation(robot) # create the interface for basic manipulation programs
-manipprob.MoveManipulator(goal=[-0.791174970479432e-05, -0.570702650942672, 0.00016744036894245085, -1.5707646492896767, 2.1162518248907247e-05, 0.20651503552483e-06]) # call motion planner with goal joint angles
-robot.WaitForController(0) # wait
 
-print("Test")
-# array([[ 1.,  0.,  0.,  0.],
-#        [ 0.,  1.,  0.,  0.],
-#        [ 0.,  0.,  1.,  0.5],
-#        [ 0.,  0.,  0.,  1.]])
+manip = robot.GetActiveManipulator()
+ikmodel = databases.inversekinematics.InverseKinematicsModel(robot,iktype=IkParameterization.Type.Translation3D)
+if not ikmodel.load():
+    ikmodel.autogenerate()
+
+with robot: # lock environment and save robot state
+    robot.SetDOFValues([2.58, 0.547, 1.5, -0.7],[0,1,2,3]) # set the first 4 dof values
+    Tee = manip.GetEndEffectorTransform() # get end effector
+    ikparam = IkParameterization(Tee[0:3,3],ikmodel.iktype) # build up the translation3d ik query
+    sols = manip.FindIKSolutions(ikparam, IkFilterOptions.CheckEnvCollisions) # get all solutions
+
+h = env.plot3(Tee[0:3,3],10) # plot one point
+with robot: # save robot state
+    raveLogInfo('%d solutions'%len(sols))
+    for sol in sols: # go through every solution
+        robot.SetDOFValues(sol,manip.GetArmIndices()) # set the current solution
+        env.UpdatePublishedBodies() # allow viewer to update new robot
+        time.sleep(10.0/len(sols))
