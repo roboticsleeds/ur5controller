@@ -32,7 +32,7 @@ class Ur5Controller : public ControllerBase
 			_penv = penv;
 			_paused = false;
 			_initialized = false;
-			////RAVELOG_ERROR("Test 1");
+			//RAVELOG_ERROR("Test 1");
 		}
 
 		/**
@@ -43,7 +43,7 @@ class Ur5Controller : public ControllerBase
 		*/
 		void JointStateCallback(const sensor_msgs::JointState::ConstPtr& msg)
 		{
-			////RAVELOG_ERROR("Test 2a");
+			//RAVELOG_ERROR("Test 2a");
 		  if (_paused)
 		  {
 		  	return;
@@ -62,7 +62,7 @@ class Ur5Controller : public ControllerBase
       _probot->SetDOFValues(joint_angles,
 														KinBody::CLA_CheckLimitsSilent);
 
-			////RAVELOG_ERROR("Test 2");
+			//RAVELOG_ERROR("Test 2b");
 		}
 
 		/**
@@ -75,41 +75,47 @@ class Ur5Controller : public ControllerBase
 		{
 			_probot = robot;
 
-			//RAVELOG_ERROR("Test 1");
+			//RAVELOG_ERROR("Test 3a");
 
 
       if ( !!_probot )
       {
+				_dofindices = dofindices;
 	      _nControlTransformation = nControlTransformation;
       }
 
-			int dofindices_array[] = {1,2,3,4,5,6};
+			// int dofindices_array[] = {1,2,3,4,5,6};
+			//
+			// for (int i = 0; i<=5;i++)
+			// {
+			// 	_dofindices.push_back(dofindices_array[i]);
+			// }
 
-			for (int i = 0; i<=5;i++)
-			{
-				_dofindices.push_back(dofindices_array[i]);
-			}
+			////RAVELOG_ERROR("Test 2");
 
-			//RAVELOG_ERROR("Test 2");
+			//RAVELOG_ERROR("Test 3b");
 
 
 			_pn = new ros::NodeHandle();
 			_joint_angles_sub = _pn->subscribe("/joint_states", 1, &Ur5Controller::JointStateCallback, this);
 			_move_arm_pub = _pn->advertise<trajectory_msgs::JointTrajectory>("/arm_controller/command", 1);
 
-			//RAVELOG_ERROR("Test 3");
 
+			//RAVELOG_ERROR("Test 3c");
 
 			_traj = RaveCreateTrajectory(_penv,"");
+			// _traj->Init(robot->GetActiveConfigurationSpecification());
 
-			//RAVELOG_ERROR("Test 4");
+			////RAVELOG_ERROR("Test 4");
 
 			// _traj->Init(_probot->GetActiveConfigurationSpecification());
 
 			// Class attribute indicating that the classs has been intialised.
 			_initialized = true;
 
-			//RAVELOG_ERROR("Test 5");
+			////RAVELOG_ERROR("Test 5");
+
+			//RAVELOG_ERROR("Test 3d");
 
 			return true;
 		}
@@ -117,43 +123,43 @@ class Ur5Controller : public ControllerBase
 		virtual void Reset(int options)
 		{
 			// _traj.reset();
-			////RAVELOG_ERROR("Test 4");
+			//RAVELOG_ERROR("Test 4");
 		}
 
 		virtual const std::vector<int>& GetControlDOFIndices() const
 		{
-			////RAVELOG_ERROR("Test 5");
+			//RAVELOG_ERROR("Test 5");
 			return _dofindices;
 		}
 
 		virtual int IsControlTransformation() const
 		{
-			////RAVELOG_ERROR("Test 6");
+			//RAVELOG_ERROR("Test 6");
 			return _nControlTransformation;
 		}
 
 		virtual bool SetDesired(const std::vector<OpenRAVE::dReal>& values, TransformConstPtr trans)
 		{
-			////RAVELOG_ERROR("Test 7");
+			//RAVELOG_ERROR("Test 7");
 			return true;
 		}
 
 		virtual bool SetPath(TrajectoryBaseConstPtr ptraj)
 		{
-			////RAVELOG_ERROR("Test 8a");
+			//RAVELOG_ERROR("Test 8a");
 			// _traj.reset();
 			if (ptraj != NULL)
 			{
-				// _traj = RaveCreateTrajectory(GetEnv(),ptraj->GetXMLId());
+				_traj = RaveCreateTrajectory(GetEnv(), ptraj->GetXMLId());
 				_traj->Clone(ptraj, Clone_Bodies);
 			}
-			////RAVELOG_ERROR("Test 8");
+			//RAVELOG_ERROR("Test 8b");
 			return true;
 		}
 
 		double IsSameArmConfig(vector<double> &config1, vector<double> &config2)
 		{
-			////RAVELOG_ERROR("Test 9a");
+			//RAVELOG_ERROR("Test 9a");
 				for (unsigned int i = 0; i < config1.size(); i++)
 				{
 						if (std::fabs( config1[i] - config2[i] ) > 0.01)
@@ -161,7 +167,7 @@ class Ur5Controller : public ControllerBase
 								return false;
 						}
 				}
-				////RAVELOG_ERROR("Test 9");
+				//RAVELOG_ERROR("Test 9b");
 				return true;
 		}
 
@@ -177,8 +183,35 @@ class Ur5Controller : public ControllerBase
 				return IsSameArmConfig(current_arm_config,config);
 		}
 
+		// bool MoveArm(ostream& sout, istream& sinput){
+		// 		std::string valuesString;
+		// 		sinput >> valuesString;
+		//
+		// 		ROS_INFO("input %s", valuesString.c_str());
+		//
+		// 		vector<std::string> valuestokens;
+		// 		boost::split(valuestokens, valuesString, boost::is_any_of("\t,"));
+		//
+		// 		vector<double> values;
+		//
+		// 		for (size_t i = 0; i < valuestokens.size(); ++i)
+		// 		{
+		// 				values.push_back(boost::lexical_cast<double>(valuestokens[i]));
+		// 		}
+		//
+		// 		bool ret_val = MoveArm(values);
+		//
+		// 		if (ret_val){
+		// 				sout << "True";
+		// 				return true;
+		// 		}
+		// 		sout << "False";
+		// 		return false;
+		// }
+
 		bool MoveArm(vector<double> values)
-		{	//RAVELOG_ERROR("Test 11a");
+		{
+			  //RAVELOG_ERROR("Test 11a");
 				if (ros::ok() && !_paused){
 
 						// for (size_t i = 0; i < _offset.size(); ++i)
@@ -202,8 +235,6 @@ class Ur5Controller : public ControllerBase
 					 traj.joint_names[4] ="wrist_2_joint";
 					 traj.joint_names[5] ="wrist_3_joint";
 
-					 int i(100);
-
            for(int j = 0; j < 6; j++) {
 						 traj.points[0].positions[j] = values[j];
            }
@@ -212,22 +243,23 @@ class Ur5Controller : public ControllerBase
 
 						ROS_INFO("the values are %f %f %f %f %f", values[0], values[1], values[2], values[3], values[4]);
 						_move_arm_pub.publish(traj);
+						ros::spinOnce();
 
 						// Store last values for later.
             _last_arm_command = values;
 
 						// Store last values for later.
 						// _last_arm_command = values;
-						//RAVELOG_ERROR("Test 11");
+						//RAVELOG_ERROR("Test 11b");
 						return true;
 				}
-				//RAVELOG_ERROR("Test 12");
+				////RAVELOG_ERROR("Test 12");
 				return false;
 		}
 
 		bool MoveArmTowards(vector<double> &config)
 		{
-			//RAVELOG_ERROR("Test 13a");
+			//RAVELOG_ERROR("Test 12a");
 				if (IsArmAtConfig(config))
 				{
 						return true; // already there.
@@ -239,66 +271,80 @@ class Ur5Controller : public ControllerBase
 						_last_arm_command = config;
 				}
 
-				//RAVELOG_ERROR("Test 13");
+				//RAVELOG_ERROR("Test 12b");
 
 				return false;
 		}
 
 		virtual void SimulationStep(dReal fTimeElapsed)
 		{
-			////RAVELOG_ERROR("Test 14a");
+			//RAVELOG_ERROR("Test 13a");
+			//////RAVELOG_ERROR("Test 14a");
 			if(!_initialized)
 			{
 				return;
 			}
 
-			TrajectoryBaseConstPtr ptraj = _traj;
-			//////RAVELOG_ERROR("Test 14b");
+			//RAVELOG_ERROR("Test 13b");
+
+			if(_traj != NULL) {
+				//RAVELOG_ERROR("Test ", _traj->GetNumWaypoints());
+				TrajectoryBasePtr ptraj;
+				// ptraj = RaveCreateTrajectory(GetEnv(), _traj->GetXMLId());
+				ptraj->Clone(_traj, Clone_Bodies);
+				//RAVELOG_ERROR("Test ", ptraj->GetNumWaypoints());
+			}
+			return;
+			// TrajectoryBasePtr ptraj = _traj;
+			// ptraj->Clone(_traj, Clone_Bodies);
+			//////
 			//
-			// //////RAVELOG_ERROR("Test ", ptraj->GetNumWaypoints());
-			// //////RAVELOG_ERROR("Test 14c");
-			if(ptraj != NULL && _traj->GetNumWaypoints() > 0)
+			//RAVELOG_ERROR("Test ", _traj->GetNumWaypoints());
+			// ////////RAVELOG_ERROR("Test 14c");
+			if (_traj->GetNumWaypoints() > 0)
 			{
-				//RAVELOG_ERROR("Test 14c");
+				//RAVELOG_ERROR("Test 13c");
+
 				vector<dReal> waypoint;
-				ptraj->GetWaypoint(0, waypoint);
 
-				//RAVELOG_ERROR("Test 14d");
+				_traj->GetWaypoint(0, waypoint);
 
+				////RAVELOG_ERROR("Test 14d");
+				//RAVELOG_ERROR("Test 13d");
 				static const int arr[] = {0, 1, 2, 3, 4, 5};
 				std::vector< int > arm_indices(arr,arr+sizeof(arr)/sizeof(arr[0]));
 				std::vector< dReal > arm_goal(6);
 				bool arm_at_waypoint = true;
 
-				if( ptraj->GetConfigurationSpecification().ExtractJointValues(arm_goal.begin(),waypoint.begin(),_probot,arm_indices) )
+				if( _traj->GetConfigurationSpecification().ExtractJointValues(arm_goal.begin(),waypoint.begin(),_probot,arm_indices) )
 				{
 						arm_at_waypoint = MoveArmTowards(arm_goal);
 				}
-
+				//RAVELOG_ERROR("Test 13e");
 				if (arm_at_waypoint)
 				{
 						_traj->Remove(0,1); // Remove the reached (first) waypoint. Now the next waypoint is the first waypoint.
 				}
 			}
-			//RAVELOG_ERROR("Test 14");
+			//RAVELOG_ERROR("Test 13f");
 			ros::spinOnce();
 		}
 
 		virtual bool IsDone()
 		{
-			//RAVELOG_ERROR("Test 15");
+			////RAVELOG_ERROR("Test 15");
 			return _traj->GetNumWaypoints() == 0;
 		}
 
 		virtual OpenRAVE::dReal GetTime() const
 		{
-			////RAVELOG_ERROR("Test 16");
+			//////RAVELOG_ERROR("Test 16");
 			return 0;
 		}
 
 		virtual RobotBasePtr GetRobot() const
 		{
-			////RAVELOG_ERROR("Test 17");
+			//////RAVELOG_ERROR("Test 17");
 			return _probot;
 		}
 
