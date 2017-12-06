@@ -22,23 +22,6 @@ env.Add(robot,True)
 probotcontroller = RaveCreateController(env,'ur5controller')
 robot.SetController(probotcontroller)
 
-
-
-manip = robot.GetActiveManipulator()
-ikmodel = databases.inversekinematics.InverseKinematicsModel(robot,iktype=IkParameterization.Type.Translation3D)
-if not ikmodel.load():
-    ikmodel.autogenerate()
-
-with robot: # lock environment and save robot state
-    robot.SetDOFValues([2.58, 0.547, 1.5, -0.7],[0,1,2,3]) # set the first 4 dof values
-    Tee = manip.GetEndEffectorTransform() # get end effector
-    ikparam = IkParameterization(Tee[0:3,3],ikmodel.iktype) # build up the translation3d ik query
-    sols = manip.FindIKSolutions(ikparam, IkFilterOptions.CheckEnvCollisions) # get all solutions
-
-h = env.plot3(Tee[0:3,3],10) # plot one point
-with robot: # save robot state
-    raveLogInfo('%d solutions'%len(sols))
-    for sol in sols: # go through every solution
-        robot.SetDOFValues(sol,manip.GetArmIndices()) # set the current solution
-        env.UpdatePublishedBodies() # allow viewer to update new robot
-        time.sleep(10.0/len(sols))
+manipprob = interfaces.BaseManipulation(robot) # create the interface for basic manipulation programs
+manipprob.MoveManipulator(goal=[-0.75,1.24,-0.064,2.33,-1.16,-1.548,1.19]) # call motion planner with goal joint angles
+robot.WaitForController(0) # wait
