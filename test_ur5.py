@@ -23,5 +23,5 @@ probotcontroller = RaveCreateController(env,'ur5controller')
 robot.SetController(probotcontroller)
 
 manipprob = interfaces.BaseManipulation(robot) # create the interface for basic manipulation programs
-manipprob.MoveManipulator(goal=[-0.75,1.24,-0.064,2.33,-1.16,-1.548,1.19]) # call motion planner with goal joint angles
+manipprob.MoveManipulator(goal=[-0.75,1.24,-0.064,2.33,-1.16,-1.5]) # call motion planner with goal joint angles
 robot.WaitForController(0) # wait

@@ -104,7 +104,7 @@ class Ur5Controller : public ControllerBase
 			//RAVELOG_ERROR("Test 3c");
 
 			_traj = RaveCreateTrajectory(_penv,"");
-			// _traj->Init(robot->GetActiveConfigurationSpecification());
+			_traj->Init(robot->GetConfigurationSpecification());
 
 			////RAVELOG_ERROR("Test 4");
 
@@ -287,14 +287,14 @@ class Ur5Controller : public ControllerBase
 
 			//RAVELOG_ERROR("Test 13b");
 
-			if(_traj != NULL) {
-				//RAVELOG_ERROR("Test ", _traj->GetNumWaypoints());
-				TrajectoryBasePtr ptraj;
-				// ptraj = RaveCreateTrajectory(GetEnv(), _traj->GetXMLId());
-				ptraj->Clone(_traj, Clone_Bodies);
-				//RAVELOG_ERROR("Test ", ptraj->GetNumWaypoints());
-			}
-			return;
+			//if(_traj != NULL) {
+			// 	//RAVELOG_ERROR("Test ", _traj->GetNumWaypoints());
+			// 	TrajectoryBasePtr ptraj;
+			// 	// ptraj = RaveCreateTrajectory(GetEnv(), _traj->GetXMLId());
+			// 	ptraj->Clone(_traj, Clone_Bodies);
+			// 	//RAVELOG_ERROR("Test ", ptraj->GetNumWaypoints());
+			// }
+			//return;
 			// TrajectoryBasePtr ptraj = _traj;
 			// ptraj->Clone(_traj, Clone_Bodies);
 			//////
