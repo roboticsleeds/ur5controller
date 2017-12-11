@@ -9,10 +9,6 @@ This repository includes the following:
 
 ## Other dependencies
 ```bash
-sudo apt-get install ros-indigo-brics-actuator
-```
-
-```
 sudo apt-get install ros-indigo-universal-robot
 ```
 
