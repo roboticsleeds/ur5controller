@@ -2,7 +2,7 @@
   <description brief="Connects vicon output to OpenRAVE.">
         Openrave plugin that connects vicon output to openrave.
   </description>
-  <author>Rafael Papallas, Dr Mehmet Dogar (m.r.dogar@leeds.ac.uk)</author>
+  <author>Rafael Papallas (sc13rp@leeds.ac.uk, Dr Mehmet Dogar (m.r.dogar@leeds.ac.uk)</author>
   <license>BSD</license>
   <depend package="roscpp"/>
   <depend package="openrave"/>

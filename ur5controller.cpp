@@ -22,8 +22,6 @@
 #include "std_msgs/String.h"
 #include "sensor_msgs/JointState.h"
 #include "trajectory_msgs/JointTrajectory.h"
-#include "brics_actuator/JointValue.h"
-#include "brics_actuator/JointPositions.h"
 #include "plugindefs.h"
 
 using namespace std;
