@@ -37,3 +37,4 @@ build/
 lib/
 
 ur5.urdf
+.idea/
