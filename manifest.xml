@@ -1,9 +1,9 @@
 <package>
-  <description brief="Connects vicon output to OpenRAVE.">
-        Openrave plugin that connects vicon output to openrave.
+  <description brief="OpenRAVE Controller Plugin for UR5 Robot.">
+        OpenRAVE Controller Plugin for UR5 Robot.
   </description>
-  <author>Rafael Papallas (sc13rp@leeds.ac.uk, Dr Mehmet Dogar (m.r.dogar@leeds.ac.uk)</author>
-  <license>BSD</license>
+  <author>Rafael Papallas (sc13rp@leeds.ac.uk), Dr Mehmet Dogar (m.r.dogar@leeds.ac.uk)</author>
+  <license>GNU General Public License v3</license>
   <depend package="roscpp"/>
   <depend package="openrave"/>
   <depend package="std_msgs"/>
