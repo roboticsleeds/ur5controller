@@ -38,4 +38,4 @@ robot.SetController(probotcontroller)
 
 manipprob = interfaces.BaseManipulation(robot) # create the interface for basic manipulation programs
 manipprob.MoveManipulator(goal=[-1.5708, 0, 0, 0, 0, 0]) # call motion planner with goal joint angles
-# robot.WaitForController(0) # wait
+robot.WaitForController(0) # wait
