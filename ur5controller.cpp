@@ -185,7 +185,7 @@ class Ur5Controller : public ControllerBase
 
                 trajectory.points[0].time_from_start = ros::Duration(1);
 
-                ROS_INFO("The new values are %f %f %f %f %f", values[0], values[1], values[2], values[3], values[4]);
+                ROS_INFO("The new values are %f %f %f %f %f", values[0], values[1], values[2], values[3], values[4], values[5]);
 
                 // Publish Changes
                 _move_arm_pub.publish(trajectory);
@@ -222,7 +222,6 @@ class Ur5Controller : public ControllerBase
             {
                 return;
             }
-
 
             if (_traj->GetNumWaypoints() > 0)
             {
