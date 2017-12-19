@@ -1,6 +1,7 @@
+# UR5 Controller for OpenRAVE
+
 ![Plugin Demo](repo_assets/demo.gif "Plugin Demo")
 
-# UR5 Controller for OpenRAVE
 This controller will listen to ROS topic that publishes the joints of UR5 in real time. Will allow visualising the current state
 of a UR5 in OpenRAVE either from a real, physical, robot or through a simulation like MoveIt!.
 
