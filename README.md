@@ -19,7 +19,7 @@ sudo apt-get install ros-indigo-universal-robot
 The installation of this project requires some prerequisites.
 
 1. You need to install and configure another OpenRAVE plugin called `or_urdf` this plugin is available [here](https://github.com/personalrobotics/or_urdf)
-I have written a blog post on how to install this plugin if you struggle to find a solution, find the tutorial [here]().
+I have written a blog post on how to install this plugin if you struggle to find a solution, find the tutorial [here](http://computingstories.com/robotics%20stories/installing-or_urdf-openrave-plugin.html).
 2. You need to install a dummy ROS OpenRAVE package that creates links for the OpenRAVE installation so ROS is aware of the
 path of the OpenRAVE software. You can download and install this dummy package from [here](https://github.com/papallas/ros_openrave).
 3. Once you install `or_urdf` you need to download the contents of this repository into a rosmake directory. This package uses a
