@@ -75,5 +75,6 @@ Another important functionality of this plugin is that is able to execute trajec
 
 There is a test program that demonstrates this functionality under [`test_ur5`](test_ur5.py) in which case will load UR5 in OpenRAVE and then do a simple trajectory execution.
 
-**This software was developed at the Robotics Lab, School of Computing, The University of Leeds.**
+# Contributors
+UR5 OpenRAVE controller was developed by the Robotics Lab in the School of Computing at the University of Leeds. This software is developed and maintained by [Rafael Papallas](https://github.com/papallas)
 
