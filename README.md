@@ -26,21 +26,22 @@ path of the OpenRAVE software. You can download and install this dummy package f
 pacakge see the relevant installation instructions in the README file in that repository.
 
 ## How to install
-1. Clone this repository and build:
+**1. Clone this repository and build:**
    ```bash
    cd ~/rosmake_ws
    git clone git@github.com:papallas/ur5controller.git
    cd ur5controller 
    rosmake
    ```
-You should see a compile process taking place and at the end a message saying the successful and failed builds. You should have 0 failed in which case everything works perfectly. If you do get failures review the error and try to solve the problem.
+- You should see a compile process taking place and at the end a message saying the successful and failed builds. You should have 0 failed in which case everything works perfectly. If you do get failures review the error and try to solve the problem.
 
-2. Let OpenRAVE know about your new plugin
+**2. Let OpenRAVE know about your new plugin**
 - Add another line at the end of your `.bashrc` file located under your home directory by running the following line in your terminal: `echo 'export OPENRAVE_PLUGINS=$OPENRAVE_PLUGINS:~/rosmake_ws/ur5controller/lib' >> ~/.bashrc`
 - Run `source ~/.bashrc`.
 - Verify that the controller is successfully installed by running `openrave --listplugins` you should see `URDF` under module and `Ur5Controller` under controllers.
 
-3. Once everything is successful with the above process you need to generate the `.urdf` file. I have created a handy Python script that will make this process easy for you.
+**3. URDF file generation**
+- Once everything is successful with the above process you need to generate the `.urdf` file. I have created a handy Python script that will make this process easy for you.
 - In `ur5controller` directory located in `rosmake_ws` you should have a directory called `ur5_model` and within this directory, you should have a Python file called `urdf_file_generator.py`.
 - `cd ~/rosmake_ws/ur5controller/ur5_model`
 - Run the Python script `urdf_file_generator.py` and if you are happy having the meshes and the URDF and SRDF files under
