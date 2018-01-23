@@ -259,7 +259,7 @@
   <joint name="ee_fixed_joint" type="fixed">
     <parent link="wrist_3_link"/>
     <child link="ee_link"/>
-    <origin rpy="0.0 0.0 1.570796325" xyz="0.0 0.0823 0.0"/>
+    <origin rpy="0.0 0.0 1.570796325" xyz="0.0 0.1623 0.0"/>
   </joint>
 
 
@@ -367,7 +367,7 @@
   <joint name="Gripper_Adapter_Fix" type="fixed">
     <parent link="ee_link"/>
     <child link="simple_gripper_base"/>
-    <origin rpy="0.0 1.57075 0.0" xyz="0.0 0.0 0.0"/>
+    <origin rpy="0.0 1.57075 0.0" xyz="-0.08 0.0 0.0"/>
   </joint>
 
   <!-- base -->
