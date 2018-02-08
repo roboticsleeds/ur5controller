@@ -1,24 +1,68 @@
 cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+project(ur5controller)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-set(ROS_BUILD_TYPE RelWithDebInfo)
+include(CheckCXXSourceCompiles)
 
-rosbuild_init()
-
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
-#rosbuild_genmsg()
-#rosbuild_gensrv()
-
-rosbuild_add_library(ur5controller
-    ur5controller.cpp
-    ur5controller_interface.cpp
+find_package(catkin REQUIRED COMPONENTS
+    geometry_msgs
+    openrave_catkin
+    std_msgs
+    robotiq_c_model_control
+    trajectory_msgs
 )
 
+
+
+include_directories(SYSTEM
+    ${catkin_INCLUDE_DIRS}
+    ${OpenRAVE_INCLUDE_DIRS}
+    ${PROJECT_NAME}/include
+)
+
+link_directories(
+    ${catkin_LIBRARY_DIRS}
+    ${OpenRAVE_LIBRARY_DIRS}
+)
+
+find_package(Boost REQUIRED COMPONENTS thread)
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+
+
+catkin_package(
+    INCLUDE_DIRS include
+    LIBRARIES
+        ${PROJECT_NAME}
+    CATKIN_DEPENDS
+        geometry_msgs
+        robotiq_c_model_control
+        std_msgs
+        trajectory_msgs
+    DEPENDS
+        boost
+        openrave
+)
+
+include_directories(include/${PROJECT_NAME})
+
+
+# Helper library that implements core functionality.
+add_library(${PROJECT_NAME} SHARED
+    src/robotiqcontroller.cpp
+    src/ur5controller.cpp
+)
+
+# Stub library that registers the plugins with OpenRAVE.
+openrave_plugin(${PROJECT_NAME}_plugin
+    src/ur5controller_interface.cpp
+)
+target_link_libraries(${PROJECT_NAME}_plugin
+    ${PROJECT_NAME}
+    ${catkin_LIBRARIES}
+)
+
+install(TARGETS ${PROJECT_NAME}
+    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

@@ -9,6 +9,7 @@
   <depend package="std_msgs"/>
   <depend package="trajectory_msgs"/>
   <depend package="geometry_msgs"/>
+  <depend package="robotiq_c_model_control"/>
   <depend package="tf"/>
   <export>
       <python path="${prefix}/pythonsrc"/>
