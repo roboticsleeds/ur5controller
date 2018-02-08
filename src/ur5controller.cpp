@@ -66,10 +66,22 @@ class Ur5Controller : public ControllerBase
                 joint_angles.push_back((msg->position).at(i));
             }
 
+            // TODO: Fix this hack
+            std::vector<double> current_arm_config;
+            _probot->GetDOFValues(current_arm_config, _dofindices);
+
+            // current_arm_config[3] is the gripper value, which is not applicable here.
+            current_arm_config[0] = joint_angles[2];
+            current_arm_config[1] = joint_angles[1];
+            current_arm_config[2] = joint_angles[0];
+            current_arm_config[4] = joint_angles[3];
+            current_arm_config[5] = joint_angles[4];
+            current_arm_config[6] = joint_angles[5];
+
             // Set DOF Values of the joint angles just received from message to the
             // robot in OpenRAVE.
             OpenRAVE::EnvironmentMutex::scoped_lock lockenv(_penv->GetMutex());
-            _probot->SetDOFValues(joint_angles,
+            _probot->SetDOFValues(current_arm_config,
                                   KinBody::CLA_CheckLimitsSilent);
         }
 
@@ -153,7 +165,6 @@ class Ur5Controller : public ControllerBase
             static const int arr[] = {0, 1, 2, 3, 4, 5};
             vector<int> dofindices(arr, arr + sizeof(arr) / sizeof(arr[0]));
             _probot->GetDOFValues(current_arm_config, dofindices);
-
             return IsSameArmConfig(current_arm_config, config);
         }
 
