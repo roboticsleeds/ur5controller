@@ -45,7 +45,7 @@
   <link name="base_link">
     <visual>
       <geometry>
-        <mesh filename="{}/arm/meshes/visual/base.dae"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/visual/base.dae"/>
       </geometry>
       <material name="LightGrey">
         <color rgba="0.7 0.7 0.7 1.0"/>
@@ -53,7 +53,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="{}/arm/meshes/collision/base.stl"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/collision/base.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -77,7 +77,7 @@
   <link name="shoulder_link">
     <visual>
       <geometry>
-        <mesh filename="{}/arm/meshes/visual/shoulder.dae"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/visual/shoulder.dae"/>
       </geometry>
       <material name="LightGrey">
         <color rgba="0.7 0.7 0.7 1.0"/>
@@ -85,7 +85,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="{}/arm/meshes/collision/shoulder.stl"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/collision/shoulder.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -109,7 +109,7 @@
   <link name="upper_arm_link">
     <visual>
       <geometry>
-        <mesh filename="{}/arm/meshes/visual/upperarm.dae"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/visual/upperarm.dae"/>
       </geometry>
       <material name="LightGrey">
         <color rgba="0.7 0.7 0.7 1.0"/>
@@ -117,7 +117,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="{}/arm/meshes/collision/upperarm.stl"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/collision/upperarm.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -141,7 +141,7 @@
   <link name="forearm_link">
     <visual>
       <geometry>
-        <mesh filename="{}/arm/meshes/visual/forearm.dae"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/visual/forearm.dae"/>
       </geometry>
       <material name="LightGrey">
         <color rgba="0.7 0.7 0.7 1.0"/>
@@ -149,7 +149,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="{}/arm/meshes/collision/forearm.stl"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/collision/forearm.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -173,7 +173,7 @@
   <link name="wrist_1_link">
     <visual>
       <geometry>
-        <mesh filename="{}/arm/meshes/visual/wrist1.dae"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/visual/wrist1.dae"/>
       </geometry>
       <material name="LightGrey">
         <color rgba="0.7 0.7 0.7 1.0"/>
@@ -181,7 +181,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="{}/arm/meshes/collision/wrist1.stl"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/collision/wrist1.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -205,7 +205,7 @@
   <link name="wrist_2_link">
     <visual>
       <geometry>
-        <mesh filename="{}/arm/meshes/visual/wrist2.dae"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/visual/wrist2.dae"/>
       </geometry>
       <material name="LightGrey">
         <color rgba="0.7 0.7 0.7 1.0"/>
@@ -213,7 +213,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="{}/arm/meshes/collision/wrist2.stl"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/collision/wrist2.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -237,7 +237,7 @@
   <link name="wrist_3_link">
     <visual>
       <geometry>
-        <mesh filename="{}/arm/meshes/visual/wrist3.dae"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/visual/wrist3.dae"/>
       </geometry>
       <material name="LightGrey">
         <color rgba="0.7 0.7 0.7 1.0"/>
@@ -245,7 +245,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="{}/arm/meshes/collision/wrist3.stl"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/collision/wrist3.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -379,7 +379,7 @@
 			</inertial -->
     <visual>
       <geometry>
-        <mesh filename="{}/gripper/meshes/visual/base.dae" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://ur5controller/ur5_description/robotiq_two_finger_gripper/meshes/visual/base.dae" scale="0.001 0.001 0.001"/>
       </geometry>
     </visual>
     <collision>
@@ -409,7 +409,7 @@
   <link name="simple_gripper_right_driver">
     <visual>
       <geometry>
-        <mesh filename="{}/gripper/meshes/visual/driver.dae" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://ur5controller/ur5_description/robotiq_two_finger_gripper/meshes/visual/driver.dae" scale="0.001 0.001 0.001"/>
       </geometry>
     </visual>
     <collision>
@@ -431,7 +431,7 @@
   <link name="simple_gripper_right_coupler">
     <visual>
       <geometry>
-        <mesh filename="{}/gripper/meshes/visual/coupler.dae" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://ur5controller/ur5_description/robotiq_two_finger_gripper/meshes/visual/coupler.dae" scale="0.001 0.001 0.001"/>
       </geometry>
     </visual>
     <collision>
@@ -456,7 +456,7 @@
   <link name="simple_gripper_right_follower">
     <visual>
       <geometry>
-        <mesh filename="{}/gripper/meshes/visual/follower.dae" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://ur5controller/ur5_description/robotiq_two_finger_gripper/meshes/visual/follower.dae" scale="0.001 0.001 0.001"/>
       </geometry>
     </visual>
     <collision>
@@ -477,7 +477,7 @@
   <link name="simple_gripper_right_pad">
     <visual>
       <geometry>
-        <mesh filename="{}/gripper/meshes/visual/pad.dae" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://ur5controller/ur5_description/robotiq_two_finger_gripper/meshes/visual/pad.dae" scale="0.001 0.001 0.001"/>
       </geometry>
     </visual>
     <collision>
@@ -502,7 +502,7 @@
   <link name="simple_gripper_right_spring_link">
     <visual>
       <geometry>
-        <mesh filename="{}/gripper/meshes/visual/spring_link.dae" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://ur5controller/ur5_description/robotiq_two_finger_gripper/meshes/visual/spring_link.dae" scale="0.001 0.001 0.001"/>
       </geometry>
     </visual>
     <collision>
@@ -528,7 +528,7 @@
   <link name="simple_gripper_left_driver">
     <visual>
       <geometry>
-        <mesh filename="{}/gripper/meshes/visual/driver.dae" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://ur5controller/ur5_description/robotiq_two_finger_gripper/meshes/visual/driver.dae" scale="0.001 0.001 0.001"/>
       </geometry>
     </visual>
     <collision>
@@ -550,7 +550,7 @@
   <link name="simple_gripper_left_coupler">
     <visual>
       <geometry>
-        <mesh filename="{}/gripper/meshes/visual/coupler.dae" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://ur5controller/ur5_description/robotiq_two_finger_gripper/meshes/visual/coupler.dae" scale="0.001 0.001 0.001"/>
       </geometry>
     </visual>
     <collision>
@@ -575,7 +575,7 @@
   <link name="simple_gripper_left_follower">
     <visual>
       <geometry>
-        <mesh filename="{}/gripper/meshes/visual/follower.dae" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://ur5controller/ur5_description/robotiq_two_finger_gripper/meshes/visual/follower.dae" scale="0.001 0.001 0.001"/>
       </geometry>
     </visual>
     <collision>
@@ -596,7 +596,7 @@
   <link name="simple_gripper_left_pad">
     <visual>
       <geometry>
-        <mesh filename="{}/gripper/meshes/visual/pad.dae" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://ur5controller/ur5_description/robotiq_two_finger_gripper/meshes/visual/pad.dae" scale="0.001 0.001 0.001"/>
       </geometry>
     </visual>
     <collision>
@@ -621,7 +621,7 @@
   <link name="simple_gripper_left_spring_link">
     <visual>
       <geometry>
-        <mesh filename="{}/gripper/meshes/visual/spring_link.dae" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://ur5controller/ur5_description/robotiq_two_finger_gripper/meshes/visual/spring_link.dae" scale="0.001 0.001 0.001"/>
       </geometry>
     </visual>
     <collision>

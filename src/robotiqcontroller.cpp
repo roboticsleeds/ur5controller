@@ -62,7 +62,6 @@ class RobotiqController : public ControllerBase
             }
 
             std::vector<double> gripper_value;
-
             gripper_value.push_back(msg->rPR * 0.87266444 / 255);
 
             // Set DOF Values of the joint angles just received from message to the
