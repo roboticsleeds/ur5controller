@@ -61,16 +61,16 @@ class RobotiqController : public ControllerBase
                 return;
             }
 
-            std::vector<double> current_arm_config;
-            _probot->GetDOFValues(current_arm_config, _dofindices);
-            current_arm_config[3] = msg->rPR * 0.87266444 / 255;
+            std::vector<double> gripper_value;
 
+            gripper_value.push_back(msg->rPR * 0.87266444 / 255);
 
             // Set DOF Values of the joint angles just received from message to the
             // robot in OpenRAVE.
             OpenRAVE::EnvironmentMutex::scoped_lock lockenv(_penv->GetMutex());
-            _probot->SetDOFValues(current_arm_config,
-                                  KinBody::CLA_CheckLimitsSilent);
+            _probot->SetDOFValues(gripper_value,
+                                  KinBody::CLA_CheckLimitsSilent,
+                                  _dofindices);
         }
 
         /**
@@ -157,7 +157,7 @@ class RobotiqController : public ControllerBase
                                                                               _probot,
                                                                               arm_indices))
                 {
-                    arm_at_waypoint = MoveArmTowards(arm_goal);
+                    // arm_at_waypoint = MoveArmTowards(arm_goal);
                 }
 
                 if (arm_at_waypoint)
