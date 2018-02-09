@@ -13,6 +13,7 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <stdlib.h>
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ros/ros.h"
@@ -62,7 +63,7 @@ class RobotiqController : public ControllerBase
             }
 
             std::vector<double> gripper_value;
-            gripper_value.push_back(msg->rPR * 0.87266444 / 255);
+            gripper_value.push_back(RobotValueToModelValue(msg->rPR));
 
             // Set DOF Values of the joint angles just received from message to the
             // robot in OpenRAVE.
@@ -70,6 +71,28 @@ class RobotiqController : public ControllerBase
             _probot->SetDOFValues(gripper_value,
                                   KinBody::CLA_CheckLimitsSilent,
                                   _dofindices);
+        }
+
+        /**
+          Given a value in the range of 0 - OPENRAVE_GRIPPER_MAX_VALUE will map
+          this value to a number in the range of 0 - ROBOT_GRIPPER_MAX_VALUE.
+
+          OpenRAVE uses a float representation for the gripper joint from 0 - ~0.87..
+          where the actual gripper joint limits are 0 - 255.
+        */
+        int RobotValueToModelValue(double value) {
+          return (int) round(OPENRAVE_GRIPPER_MAX_VALUE / ROBOT_GRIPPER_MAX_VALUE * abs(value));
+        }
+
+        /**
+          Given a value in the range of 0 - ROBOT_GRIPPER_MAX_VALUE will map
+          this value to a number in the range of 0 - OPENRAVE_GRIPPER_MAX_VALUE.
+
+          OpenRAVE uses a float representation for the gripper joint from 0 - ~0.87..
+          where the actual gripper joint limits are 0 - 255.
+        */
+        double ModelValueToRobotValue(int value) {
+          return ROBOT_GRIPPER_MAX_VALUE / OPENRAVE_GRIPPER_MAX_VALUE * abs(value);
         }
 
         /**
@@ -200,6 +223,9 @@ class RobotiqController : public ControllerBase
         RobotBasePtr _probot;
         EnvironmentBasePtr _penv;
         TrajectoryBasePtr _traj;
+
+        const float OPENRAVE_GRIPPER_MAX_VALUE = 0.87266444;
+        const int ROBOT_GRIPPER_MAX_VALUE = 255;
 };
 
 ControllerBasePtr CreateRobotiqController(EnvironmentBasePtr penv, std::istream &sinput)
