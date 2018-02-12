@@ -54,6 +54,7 @@ def create_ur5(env, urdf_path=None, srdf_path=None):
 
     # Add the robot to the environment
     env.Add(robot, True)
+    return robot
 
 
 if __name__ == "__main__":
@@ -67,8 +68,8 @@ if __name__ == "__main__":
     # Some simple manipulation task to check that the controller can control the
     # physical robot.
 
-    # manipprob = interfaces.BaseManipulation(robot) # create the interface for basic manipulation programs
-    # manipprob.MoveManipulator(goal=[-1.5708, 0, 0, 0, 0, 0]) # call motion planner with goal joint angles
-    # robot.WaitForController(0) # wait
+    manipprob = interfaces.BaseManipulation(ur5_robot) # create the interface for basic manipulation programs
+    manipprob.MoveManipulator(goal=[0.349, -1.57, 0, -1.57, 0, 0]) # call motion planner with goal joint angles
+    ur5_robot.WaitForController(0) # wait
 
     IPython.embed()
