@@ -102,9 +102,6 @@ class Ur5Controller : public ControllerBase
             // Subscribe to the topic that the robot publishes changes to joint values.
             _joint_angles_sub = _pn->subscribe("/joint_states", 1, &Ur5Controller::JointStateCallback, this);
 
-            // Publisher to /arm_controller/command, will publish to the robot the new joint values.
-            _move_arm_pub = _pn->advertise<trajectory_msgs::JointTrajectory>("/arm_controller/command", 1);
-
             _traj = RaveCreateTrajectory(_penv, "");
             _traj->Init(robot->GetConfigurationSpecification());
             _initialized = true;
@@ -142,140 +139,48 @@ class Ur5Controller : public ControllerBase
                 control_msgs::FollowJointTrajectoryGoal goal;
                 goal.trajectory = trajectory;
                 _ac->sendGoal(goal);
-                //_traj = RaveCreateTrajectory(GetEnv(), ptraj->GetXMLId());
-                //_traj->Clone(ptraj, Clone_Bodies);
-            }
-
-            return true;
-        }
-
-        double IsSameArmConfig(vector<double> &config1, vector<double> &config2)
-        {
-            for (unsigned int i = 0; i < config1.size(); i++)
-            {
-                if (std::fabs(config1[i] - config2[i]) > 0.01)
-                {
-                    return false;
-                }
             }
 
             return true;
         }
 
         trajectory_msgs::JointTrajectory FromOpenRaveToRosTrajectory(TrajectoryBaseConstPtr ptraj) {
-          trajectory_msgs::JointTrajectory trajectory;
-          trajectory.header.stamp = ros::Time::now();
-          trajectory.header.frame_id = "base_link";
-          trajectory.joint_names.resize(6);
-          trajectory.points.resize(ptraj->GetNumWaypoints());
-          trajectory.joint_names[0] = "shoulder_pan_joint";
-          trajectory.joint_names[1] = "shoulder_lift_joint";
-          trajectory.joint_names[2] = "elbow_joint";
-          trajectory.joint_names[3] = "wrist_1_joint";
-          trajectory.joint_names[4] = "wrist_2_joint";
-          trajectory.joint_names[5] = "wrist_3_joint";
+            trajectory_msgs::JointTrajectory trajectory;
+            trajectory.header.stamp = ros::Time::now();
+            trajectory.header.frame_id = "base_link";
+            trajectory.joint_names.resize(6);
+            trajectory.points.resize(ptraj->GetNumWaypoints());
+            trajectory.joint_names[0] = "shoulder_pan_joint";
+            trajectory.joint_names[1] = "shoulder_lift_joint";
+            trajectory.joint_names[2] = "elbow_joint";
+            trajectory.joint_names[3] = "wrist_1_joint";
+            trajectory.joint_names[4] = "wrist_2_joint";
+            trajectory.joint_names[5] = "wrist_3_joint";
 
-          for(int i=0; i < ptraj->GetNumWaypoints(); i++) {
-            trajectory_msgs::JointTrajectoryPoint ros_waypoint;
+            for(int i=0; i < ptraj->GetNumWaypoints(); i++) {
+                trajectory_msgs::JointTrajectoryPoint ros_waypoint;
 
-            vector <dReal> or_waypoint;
-            ptraj->GetWaypoint(i, or_waypoint);
-            //static const int arr[] = {0, 1, 2, 3, 4, 5};
-            //std::vector<int> arm_indices(arr, arr + sizeof(arr) / sizeof(arr[0]));
-            std::vector <dReal> values(6);
-            ptraj->GetConfigurationSpecification().ExtractJointValues(values.begin(),
-                                                                          or_waypoint.begin(),
-                                                                          _probot,
-                                                                          _dofindices);
+                vector <dReal> or_waypoint;
+                ptraj->GetWaypoint(i, or_waypoint);
+                std::vector <dReal> values(6);
+                ptraj->GetConfigurationSpecification().ExtractJointValues(values.begin(),
+                                                                            or_waypoint.begin(),
+                                                                            _probot,
+                                                                            _dofindices);
 
+                trajectory.points[i].positions.resize(6);
+                trajectory.points[i].velocities.resize(6);
 
-            trajectory.points[i].positions.resize(6);
-            trajectory.points[i].velocities.resize(6);
-
-            for (int j = 0; j < 6; j++)
-            {
-                trajectory.points[i].positions[j] = values[j];
-                trajectory.points[i].velocities[j] = 0.0;
-            }
-
-            trajectory.points[i].time_from_start = ros::Duration(3)*i;
-          }
-          return trajectory;
-
-        }
-
-        bool IsArmAtConfig(vector<double> &config)
-        {
-            std::vector<double> current_arm_config;
-            static const int arr[] = {0, 1, 2, 3, 4, 5};
-            vector<int> dofindices(arr, arr + sizeof(arr) / sizeof(arr[0]));
-            _probot->GetDOFValues(current_arm_config, dofindices);
-            return IsSameArmConfig(current_arm_config, config);
-        }
-
-        bool MoveArm(vector<double> values)
-        {
-            if (ros::ok() && !_paused)
-            {
-                trajectory_msgs::JointTrajectory trajectory;
-                trajectory_msgs::JointTrajectoryPoint points_n;
-
-                trajectory.header.stamp = ros::Time::now();
-                trajectory.header.frame_id = "base_link";
-                trajectory.joint_names.resize(6);
-                trajectory.points.resize(1);
-
-                trajectory.points[0].positions.resize(6);
-
-                trajectory.joint_names[0] = "shoulder_pan_joint";
-                trajectory.joint_names[1] = "shoulder_lift_joint";
-                trajectory.joint_names[2] = "elbow_joint";
-                trajectory.joint_names[3] = "wrist_1_joint";
-                trajectory.joint_names[4] = "wrist_2_joint";
-                trajectory.joint_names[5] = "wrist_3_joint";
-
-                for (int i = 0; i < 6; i++)
+                for (int j = 0; j < 6; j++)
                 {
-                    trajectory.points[0].positions[i] = values[i];
-                    trajectory.points[0].velocities[i] = (3.14/36.0); // TODO: Fix this
+                    trajectory.points[i].positions[j] = values[j];
+                    trajectory.points[i].velocities[j] = 0.0;
                 }
 
-                trajectory.points[0].time_from_start = ros::Duration(1);
-
-                ROS_INFO("The new values are %f %f %f %f %f", values[0], values[1], values[2], values[3], values[4], values[5]);
-
-                control_msgs::FollowJointTrajectoryGoal goal;
-                goal.trajectory = trajectory;
-                _ac->sendGoal(goal);
-                // _ac->waitForResult(ros::Duration(0.1));
-
-                // Publish Changes
-                // _move_arm_pub.publish(trajectory);
-                // ros::spinOnce();
-
-                // Store last values for later.
-                _last_arm_command = values;
-
-                return true;
+                trajectory.points[i].time_from_start = ros::Duration(3)*i;
             }
 
-            return false;
-        }
-
-        bool MoveArmTowards(vector<double> &config)
-        {
-            if (IsArmAtConfig(config))
-            {
-                return true; // already there.
-            }
-
-            if (_last_arm_command.empty() || !IsSameArmConfig(_last_arm_command, config))
-            {
-                MoveArm(config);
-                _last_arm_command = config;
-            }
-
-            return false;
+            return trajectory;
         }
 
         virtual void SimulationStep(dReal fTimeElapsed)
@@ -285,39 +190,12 @@ class Ur5Controller : public ControllerBase
                 return;
             }
 
-            // if (_traj->GetNumWaypoints() > 0)
-            // {
-            //     vector <dReal> waypoint;
-            //
-            //     _traj->GetWaypoint(0, waypoint);
-            //
-            //     static const int arr[] = {0, 1, 2, 3, 4, 5};
-            //     std::vector<int> arm_indices(arr, arr + sizeof(arr) / sizeof(arr[0]));
-            //     std::vector <dReal> arm_goal(6);
-            //     bool arm_at_waypoint = true;
-            //
-            //     if (_traj->GetConfigurationSpecification().ExtractJointValues(arm_goal.begin(),
-            //                                                                   waypoint.begin(),
-            //                                                                   _probot,
-            //                                                                   arm_indices))
-            //     {
-            //         arm_at_waypoint = MoveArmTowards(arm_goal);
-            //     }
-            //
-            //     if (arm_at_waypoint)
-            //     {
-            //         // Remove the reached (first) way-point. Now the next way-point is the first way-point.
-            //         _traj->Remove(0, 1);
-            //     }
-            // }
-
             ros::spinOnce();
         }
 
         virtual bool IsDone()
         {
             return _ac->waitForResult(ros::Duration(0.05));
-            //return _traj->GetNumWaypoints() == 0;
         }
 
         virtual OpenRAVE::dReal GetTime() const
@@ -341,8 +219,6 @@ class Ur5Controller : public ControllerBase
 
         ros::Subscriber _joint_angles_sub;
         ros::NodeHandle *_pn;
-        ros::Publisher _move_arm_pub;
-        // actionlib::SimpleActionClient<trajectory_msgs::JointTrajectory> _ac;
         TrajClient* _ac;
 
         RobotBasePtr _probot;
