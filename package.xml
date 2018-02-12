@@ -21,6 +21,9 @@
   <depend>trajectory_msgs</depend>
   <depend>robotiq_c_model_control</depend>
   <depend>tf</depend>
+  <depend>actionlib</depend>
+  <depend>actionlib_msgs</depend>
+  <depend>control_msgs</depend>
   <export>
     <rviz plugin="${prefix}/plugins.xml"/>
   </export>

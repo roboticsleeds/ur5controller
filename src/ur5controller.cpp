@@ -20,10 +20,17 @@
 #include "std_msgs/String.h"
 #include "sensor_msgs/JointState.h"
 #include "trajectory_msgs/JointTrajectory.h"
+#include "control_msgs/FollowJointTrajectoryGoal.h"
+#include "control_msgs/FollowJointTrajectoryAction.h"
+#include <actionlib/client/simple_action_client.h>
+#include <actionlib/client/terminal_state.h>
 #include "plugindefs.h"
 
 using namespace std;
 using namespace OpenRAVE;
+
+typedef actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> TrajClient;
+
 
 /**
 	This is a controller for the UR5 robot. The main purpose of this class is to
@@ -102,6 +109,9 @@ class Ur5Controller : public ControllerBase
             _traj->Init(robot->GetConfigurationSpecification());
             _initialized = true;
 
+            _ac = new TrajClient("follow_joint_trajectory", true);
+            _ac->waitForServer(); //will wait for infinite time
+
             return true;
         }
 
@@ -128,8 +138,12 @@ class Ur5Controller : public ControllerBase
         {
             if (ptraj != NULL)
             {
-                _traj = RaveCreateTrajectory(GetEnv(), ptraj->GetXMLId());
-                _traj->Clone(ptraj, Clone_Bodies);
+                trajectory_msgs::JointTrajectory trajectory = FromOpenRaveToRosTrajectory(ptraj);
+                control_msgs::FollowJointTrajectoryGoal goal;
+                goal.trajectory = trajectory;
+                _ac->sendGoal(goal);
+                //_traj = RaveCreateTrajectory(GetEnv(), ptraj->GetXMLId());
+                //_traj->Clone(ptraj, Clone_Bodies);
             }
 
             return true;
@@ -146,6 +160,48 @@ class Ur5Controller : public ControllerBase
             }
 
             return true;
+        }
+
+        trajectory_msgs::JointTrajectory FromOpenRaveToRosTrajectory(TrajectoryBaseConstPtr ptraj) {
+          trajectory_msgs::JointTrajectory trajectory;
+          trajectory.header.stamp = ros::Time::now();
+          trajectory.header.frame_id = "base_link";
+          trajectory.joint_names.resize(6);
+          trajectory.points.resize(ptraj->GetNumWaypoints());
+          trajectory.joint_names[0] = "shoulder_pan_joint";
+          trajectory.joint_names[1] = "shoulder_lift_joint";
+          trajectory.joint_names[2] = "elbow_joint";
+          trajectory.joint_names[3] = "wrist_1_joint";
+          trajectory.joint_names[4] = "wrist_2_joint";
+          trajectory.joint_names[5] = "wrist_3_joint";
+
+          for(int i=0; i < ptraj->GetNumWaypoints(); i++) {
+            trajectory_msgs::JointTrajectoryPoint ros_waypoint;
+
+            vector <dReal> or_waypoint;
+            ptraj->GetWaypoint(i, or_waypoint);
+            //static const int arr[] = {0, 1, 2, 3, 4, 5};
+            //std::vector<int> arm_indices(arr, arr + sizeof(arr) / sizeof(arr[0]));
+            std::vector <dReal> values(6);
+            ptraj->GetConfigurationSpecification().ExtractJointValues(values.begin(),
+                                                                          or_waypoint.begin(),
+                                                                          _probot,
+                                                                          _dofindices);
+
+
+            trajectory.points[i].positions.resize(6);
+            trajectory.points[i].velocities.resize(6);
+
+            for (int j = 0; j < 6; j++)
+            {
+                trajectory.points[i].positions[j] = values[j];
+                trajectory.points[i].velocities[j] = 0.0;
+            }
+
+            trajectory.points[i].time_from_start = ros::Duration(3)*i;
+          }
+          return trajectory;
+
         }
 
         bool IsArmAtConfig(vector<double> &config)
@@ -171,9 +227,9 @@ class Ur5Controller : public ControllerBase
 
                 trajectory.points[0].positions.resize(6);
 
-                trajectory.joint_names[0] = "elbow_joint";
+                trajectory.joint_names[0] = "shoulder_pan_joint";
                 trajectory.joint_names[1] = "shoulder_lift_joint";
-                trajectory.joint_names[2] = "shoulder_pan_joint";
+                trajectory.joint_names[2] = "elbow_joint";
                 trajectory.joint_names[3] = "wrist_1_joint";
                 trajectory.joint_names[4] = "wrist_2_joint";
                 trajectory.joint_names[5] = "wrist_3_joint";
@@ -181,15 +237,21 @@ class Ur5Controller : public ControllerBase
                 for (int i = 0; i < 6; i++)
                 {
                     trajectory.points[0].positions[i] = values[i];
+                    trajectory.points[0].velocities[i] = (3.14/36.0); // TODO: Fix this
                 }
 
                 trajectory.points[0].time_from_start = ros::Duration(1);
 
                 ROS_INFO("The new values are %f %f %f %f %f", values[0], values[1], values[2], values[3], values[4], values[5]);
 
+                control_msgs::FollowJointTrajectoryGoal goal;
+                goal.trajectory = trajectory;
+                _ac->sendGoal(goal);
+                // _ac->waitForResult(ros::Duration(0.1));
+
                 // Publish Changes
-                _move_arm_pub.publish(trajectory);
-                ros::spinOnce();
+                // _move_arm_pub.publish(trajectory);
+                // ros::spinOnce();
 
                 // Store last values for later.
                 _last_arm_command = values;
@@ -223,38 +285,39 @@ class Ur5Controller : public ControllerBase
                 return;
             }
 
-            if (_traj->GetNumWaypoints() > 0)
-            {
-                vector <dReal> waypoint;
-
-                _traj->GetWaypoint(0, waypoint);
-
-                static const int arr[] = {0, 1, 2, 3, 4, 5};
-                std::vector<int> arm_indices(arr, arr + sizeof(arr) / sizeof(arr[0]));
-                std::vector <dReal> arm_goal(6);
-                bool arm_at_waypoint = true;
-
-                if (_traj->GetConfigurationSpecification().ExtractJointValues(arm_goal.begin(),
-                                                                              waypoint.begin(),
-                                                                              _probot,
-                                                                              arm_indices))
-                {
-                    arm_at_waypoint = MoveArmTowards(arm_goal);
-                }
-
-                if (arm_at_waypoint)
-                {
-                    // Remove the reached (first) way-point. Now the next way-point is the first way-point.
-                    _traj->Remove(0, 1);
-                }
-            }
+            // if (_traj->GetNumWaypoints() > 0)
+            // {
+            //     vector <dReal> waypoint;
+            //
+            //     _traj->GetWaypoint(0, waypoint);
+            //
+            //     static const int arr[] = {0, 1, 2, 3, 4, 5};
+            //     std::vector<int> arm_indices(arr, arr + sizeof(arr) / sizeof(arr[0]));
+            //     std::vector <dReal> arm_goal(6);
+            //     bool arm_at_waypoint = true;
+            //
+            //     if (_traj->GetConfigurationSpecification().ExtractJointValues(arm_goal.begin(),
+            //                                                                   waypoint.begin(),
+            //                                                                   _probot,
+            //                                                                   arm_indices))
+            //     {
+            //         arm_at_waypoint = MoveArmTowards(arm_goal);
+            //     }
+            //
+            //     if (arm_at_waypoint)
+            //     {
+            //         // Remove the reached (first) way-point. Now the next way-point is the first way-point.
+            //         _traj->Remove(0, 1);
+            //     }
+            // }
 
             ros::spinOnce();
         }
 
         virtual bool IsDone()
         {
-            return _traj->GetNumWaypoints() == 0;
+            return _ac->waitForResult(ros::Duration(0.05));
+            //return _traj->GetNumWaypoints() == 0;
         }
 
         virtual OpenRAVE::dReal GetTime() const
@@ -279,6 +342,8 @@ class Ur5Controller : public ControllerBase
         ros::Subscriber _joint_angles_sub;
         ros::NodeHandle *_pn;
         ros::Publisher _move_arm_pub;
+        // actionlib::SimpleActionClient<trajectory_msgs::JointTrajectory> _ac;
+        TrajClient* _ac;
 
         RobotBasePtr _probot;
         EnvironmentBasePtr _penv;

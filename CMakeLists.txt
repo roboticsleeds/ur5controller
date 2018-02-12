@@ -9,8 +9,10 @@ find_package(catkin REQUIRED COMPONENTS
     std_msgs
     robotiq_c_model_control
     trajectory_msgs
+    actionlib
+    actionlib_msgs
+    control_msgs
 )
-
 
 
 include_directories(SYSTEM
@@ -38,6 +40,9 @@ catkin_package(
         robotiq_c_model_control
         std_msgs
         trajectory_msgs
+        actionlib
+        actionlib_msgs
+        control_msgs
     DEPENDS
         boost
         openrave
