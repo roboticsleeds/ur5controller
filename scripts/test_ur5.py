@@ -16,6 +16,7 @@
 # Author: Rafael Papallas (http://papallas.me)
 
 from openravepy import *
+import time
 import IPython
 
 def create_ur5(env, urdf_path=None, srdf_path=None):
@@ -28,15 +29,6 @@ def create_ur5(env, urdf_path=None, srdf_path=None):
     with env:
         name = module.SendCommand('LoadURI {} {}'.format(urdf_path, srdf_path))
         robot = env.GetRobot(name)
-
-    multicontroller = RaveCreateMultiController(env, "")
-    robot.SetController(multicontroller)
-
-    robot_controller = RaveCreateController(env,'ur5controller')
-    hand_controller = RaveCreateController(env, 'robotiqcontroller')
-
-    multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
-    multicontroller.AttachController(hand_controller, [3], 0)
 
     manip = robot.SetActiveManipulator(robot.GetManipulators()[0])
     ikmodel = databases.inversekinematics.InverseKinematicsModel(robot,
@@ -52,6 +44,16 @@ def create_ur5(env, urdf_path=None, srdf_path=None):
     robot.GetManipulators()[0].SetChuckingDirection([1.0])
     robot.GetManipulators()[0].SetLocalToolDirection([1.0, 0, 0])
 
+
+    multicontroller = RaveCreateMultiController(env, "")
+    robot.SetController(multicontroller)
+
+    robot_controller = RaveCreateController(env,'ur5controller')
+    hand_controller = RaveCreateController(env, 'robotiqcontroller')
+
+    multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
+    multicontroller.AttachController(hand_controller, [3], 0)
+
     # Add the robot to the environment
     env.Add(robot, True)
     return robot
@@ -63,13 +65,16 @@ if __name__ == "__main__":
 
     # At this point, the robot should load in the viewer and replicate the
     # current configuration of the physical robot.
-    ur5_robot = create_ur5(env)
+    robot = create_ur5(env)
 
     # Some simple manipulation task to check that the controller can control the
     # physical robot.
 
-    manipprob = interfaces.BaseManipulation(ur5_robot) # create the interface for basic manipulation programs
-    manipprob.MoveManipulator(goal=[0.349, -1.57, 0, -1.57, 0, 0]) # call motion planner with goal joint angles
-    ur5_robot.WaitForController(0) # wait
+    # manipprob = interfaces.BaseManipulation(robot) # create the interface for basic manipulation programs
+    # manipprob.MoveManipulator(goal=[0, -1.57, 0, 0, 0, 0]) # call motion planner with goal joint angles
+    # robot.WaitForController(0) # wait
+
+    task_manipulation = interfaces.TaskManipulation(robot)
+    task_manipulation.CloseFingers()
 
     IPython.embed()
