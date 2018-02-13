@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
     control_msgs
 )
 
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
 
 include_directories(SYSTEM
     ${catkin_INCLUDE_DIRS}

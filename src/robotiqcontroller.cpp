@@ -27,6 +27,8 @@
 using namespace std;
 using namespace OpenRAVE;
 
+typedef robotiq_c_model_control::CModel_robot_output Gripper_Output;
+
 
 /**
 	This is a controller for the UR5 robot. The main purpose of this class is to
@@ -55,7 +57,7 @@ class RobotiqController : public ControllerBase
 
             @param msg the message sent by the subscriber (i.e the new joint values)
         */
-        void JointStateCallback(const robotiq_c_model_control::CModel_robot_output::ConstPtr &msg)
+        void JointStateCallback(const robotiq_c_model_control::CModel_robot_input::ConstPtr &msg)
         {
             if (_paused)
             {
@@ -63,7 +65,7 @@ class RobotiqController : public ControllerBase
             }
 
             std::vector<double> gripper_value;
-            gripper_value.push_back(RobotValueToModelValue(msg->rPR));
+            gripper_value.push_back(RobotValueToModelValue(msg->gPR));
 
             // Set DOF Values of the joint angles just received from message to the
             // robot in OpenRAVE.
@@ -80,8 +82,8 @@ class RobotiqController : public ControllerBase
           OpenRAVE uses a float representation for the gripper joint from 0 - ~0.87..
           where the actual gripper joint limits are 0 - 255.
         */
-        int RobotValueToModelValue(double value) {
-          return (int) round(OPENRAVE_GRIPPER_MAX_VALUE / ROBOT_GRIPPER_MAX_VALUE * abs(value));
+        int ModelValueToRobotValue(double value) {
+          return (int) round(ROBOT_GRIPPER_MAX_VALUE / OPENRAVE_GRIPPER_MAX_VALUE * abs(value));
         }
 
         /**
@@ -91,8 +93,8 @@ class RobotiqController : public ControllerBase
           OpenRAVE uses a float representation for the gripper joint from 0 - ~0.87..
           where the actual gripper joint limits are 0 - 255.
         */
-        double ModelValueToRobotValue(int value) {
-          return ROBOT_GRIPPER_MAX_VALUE / OPENRAVE_GRIPPER_MAX_VALUE * abs(value);
+        double RobotValueToModelValue(int value) {
+          return OPENRAVE_GRIPPER_MAX_VALUE / ROBOT_GRIPPER_MAX_VALUE * abs(value);
         }
 
         /**
@@ -114,14 +116,18 @@ class RobotiqController : public ControllerBase
             _pn = new ros::NodeHandle();
 
             // Subscribe to the topic that the robot publishes changes to joint values.
-            _gripper_subscriber = _pn->subscribe("/CModelRobotOutput", 1, &RobotiqController::JointStateCallback, this);
+            _gripper_subscriber = _pn->subscribe("/CModelRobotInput", 1, &RobotiqController::JointStateCallback, this);
 
             // Publisher to /arm_controller/command, will publish to the robot the new joint values.
-            _gripper_publisher = _pn->advertise<robotiq_c_model_control::CModel_robot_input>("/CModelRobotInput", 1);
+            _gripper_publisher = _pn->advertise<Gripper_Output>("/CModelRobotOutput", 1);
 
             _traj = RaveCreateTrajectory(_penv, "");
             _traj->Init(robot->GetConfigurationSpecification());
             _initialized = true;
+
+            // TODO: Reset; Activate; Open; Close gripper.
+            reset();
+            activate();
 
             return true;
         }
@@ -142,6 +148,7 @@ class RobotiqController : public ControllerBase
 
         virtual bool SetDesired(const std::vector <OpenRAVE::dReal> &values, TransformConstPtr trans)
         {
+            setValue(ModelValueToRobotValue(values[0]));
             return true;
         }
 
@@ -149,8 +156,17 @@ class RobotiqController : public ControllerBase
         {
             if (ptraj != NULL)
             {
-                _traj = RaveCreateTrajectory(GetEnv(), ptraj->GetXMLId());
-                _traj->Clone(ptraj, Clone_Bodies);
+              for(int i=0; i < ptraj->GetNumWaypoints(); i++) {
+                vector <dReal> or_waypoint;
+                ptraj->GetWaypoint(i, or_waypoint);
+                std::vector <dReal> values(1);
+                ptraj->GetConfigurationSpecification().ExtractJointValues(values.begin(),
+                                                                          or_waypoint.begin(),
+                                                                          _probot,
+                                                                          _dofindices);
+
+                setValue(ModelValueToRobotValue(values[0]));
+              }
             }
 
             return true;
@@ -163,38 +179,14 @@ class RobotiqController : public ControllerBase
                 return;
             }
 
-            if (_traj->GetNumWaypoints() > 0)
-            {
-                vector <dReal> waypoint;
-
-                _traj->GetWaypoint(0, waypoint);
-
-                static const int arr[] = {0, 1, 2, 3, 4, 5};
-                std::vector<int> arm_indices(arr, arr + sizeof(arr) / sizeof(arr[0]));
-                std::vector <dReal> arm_goal(6);
-                bool arm_at_waypoint = true;
-
-                if (_traj->GetConfigurationSpecification().ExtractJointValues(arm_goal.begin(),
-                                                                              waypoint.begin(),
-                                                                              _probot,
-                                                                              arm_indices))
-                {
-                    // arm_at_waypoint = MoveArmTowards(arm_goal);
-                }
-
-                if (arm_at_waypoint)
-                {
-                    // Remove the reached (first) way-point. Now the next way-point is the first way-point.
-                    _traj->Remove(0, 1);
-                }
-            }
-
             ros::spinOnce();
         }
 
         virtual bool IsDone()
         {
-            return _traj->GetNumWaypoints() == 0;
+          return true;
+          // TODO: Fix this
+          // return _current_status.gSTA == 3 and _current_status.gACT = 1;
         }
 
         virtual OpenRAVE::dReal GetTime() const
@@ -207,6 +199,67 @@ class RobotiqController : public ControllerBase
             return _probot;
         }
 
+        void setValue(int value) {
+          if (value >= 0 && value <= 255) {
+            _command.rPR = value;
+            _command.rACT = 1;
+            _command.rGTO = 1;
+            _command.rATR = 0;
+            _command.rSP = 255;
+            _command.rFR = 150;
+
+            publish_command();
+          } else {
+            ROS_ERROR("The value for the gripper was out of limits 0-255.");
+          }
+        }
+
+        void publish_command() {
+          _gripper_publisher.publish(_command);
+        }
+
+        void reset() {
+          _command.rACT = 0;
+          _command.rGTO = 0;
+          _command.rATR = 0;
+          _command.rPR = 0;
+          _command.rSP = 0;
+          _command.rFR = 0;
+
+          publish_command();
+        }
+
+        void activate() {
+          _command.rACT = 1;
+          _command.rGTO = 0;
+          _command.rATR = 0;
+          _command.rPR = 0;
+          _command.rSP = 255;
+          _command.rFR = 150;
+          publish_command();
+        }
+
+        void close() {
+          _command.rPR = 255;
+          _command.rACT = 1;
+          _command.rGTO = 1;
+          _command.rATR = 0;
+          _command.rSP = 255;
+          _command.rFR = 150;
+
+          publish_command();
+        }
+
+        void open() {
+          _command.rPR = 0;
+          _command.rACT = 1;
+          _command.rGTO = 1;
+          _command.rATR = 0;
+          _command.rSP = 255;
+          _command.rFR = 150;
+
+          publish_command();
+        }
 
     private:
         bool _initialized;
@@ -214,7 +267,7 @@ class RobotiqController : public ControllerBase
         int _nControlTransformation;
 
         std::vector<int> _dofindices;
-        robotiq_c_model_control::CModel_robot_input _command = robotiq_c_model_control::CModel_robot_input();
+        Gripper_Output _command;
 
         ros::Subscriber _gripper_subscriber;
         ros::Publisher _gripper_publisher;
