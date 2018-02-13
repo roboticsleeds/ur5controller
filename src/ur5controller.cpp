@@ -101,9 +101,6 @@ class Ur5Controller : public ControllerBase
 
             // Subscribe to the topic that the robot publishes changes to joint values.
             _joint_angles_sub = _pn->subscribe("/joint_states", 1, &Ur5Controller::JointStateCallback, this);
-
-            _traj = RaveCreateTrajectory(_penv, "");
-            _traj->Init(robot->GetConfigurationSpecification());
             _initialized = true;
 
             _ac = new TrajClient("follow_joint_trajectory", true);
@@ -135,13 +132,38 @@ class Ur5Controller : public ControllerBase
         {
             if (ptraj != NULL)
             {
-                trajectory_msgs::JointTrajectory trajectory = FromOpenRaveToRosTrajectory(ptraj);
-                control_msgs::FollowJointTrajectoryGoal goal;
-                goal.trajectory = trajectory;
-                _ac->sendGoal(goal);
+                if (checkIfValuesAreWithinTheJointLimits(ptraj)) {
+                    trajectory_msgs::JointTrajectory trajectory = FromOpenRaveToRosTrajectory(ptraj);
+                    control_msgs::FollowJointTrajectoryGoal goal;
+                    goal.trajectory = trajectory;
+                    _ac->sendGoal(goal);
+                } else {
+                    ROS_ERROR("Error executing the trajectory. One or some of the values where out of the joint limits of the robot.");
+                }
             }
 
             return true;
+        }
+
+        bool checkIfValuesAreWithinTheJointLimits(TrajectoryBaseConstPtr ptraj) {
+          for(int i=0; i < ptraj->GetNumWaypoints(); i++) {
+            vector <dReal> or_waypoint;
+            ptraj->GetWaypoint(i, or_waypoint);
+            std::vector <dReal> values(6);
+            ptraj->GetConfigurationSpecification().ExtractJointValues(values.begin(),
+                                                                      or_waypoint.begin(),
+                                                                      _probot,
+                                                                      _dofindices);
+            for (int j = 0; j < 6; j++) {
+              // Check if the value is within the joint limits of the robot.
+              if(values[j] < -6.2831853 || values[j] > 6.2831853) {
+                  ROS_INFO("Joint value was out of joint limits: %f", values[j]);
+                  return false;
+              }
+            }
+          }
+
+          return true;
         }
 
         trajectory_msgs::JointTrajectory FromOpenRaveToRosTrajectory(TrajectoryBaseConstPtr ptraj) {
@@ -173,8 +195,8 @@ class Ur5Controller : public ControllerBase
 
                 for (int j = 0; j < 6; j++)
                 {
-                    trajectory.points[i].positions[j] = values[j];
-                    trajectory.points[i].velocities[j] = 0.0;
+                  trajectory.points[i].positions[j] = values[j];
+                  trajectory.points[i].velocities[j] = 0.0;
                 }
 
                 trajectory.points[i].time_from_start = ros::Duration(3)*i;
@@ -215,7 +237,6 @@ class Ur5Controller : public ControllerBase
         int _nControlTransformation;
 
         std::vector<int> _dofindices;
-        std::vector<double> _last_arm_command;
 
         ros::Subscriber _joint_angles_sub;
         ros::NodeHandle *_pn;
@@ -223,7 +244,6 @@ class Ur5Controller : public ControllerBase
 
         RobotBasePtr _probot;
         EnvironmentBasePtr _penv;
-        TrajectoryBasePtr _traj;
 };
 
 ControllerBasePtr CreateUr5Controller(EnvironmentBasePtr penv, std::istream &sinput)
