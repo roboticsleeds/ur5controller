@@ -100,7 +100,7 @@ class Ur5Controller : public ControllerBase
             }
 
             OpenRAVE::EnvironmentMutex::scoped_lock lockenv(_penv->GetMutex());
-            static const dReal arr[] = {0.4,0.4,0.4,0.4,0.4,0.4};
+            static const dReal arr[] = {0.4,0.4,0.4,0.4,0.4,0.4,0.4};
             vector<dReal> velocity_limits (arr, arr + sizeof(arr) / sizeof(arr[0]) );
             _probot->SetDOFVelocityLimits(velocity_limits);
 
@@ -168,7 +168,6 @@ class Ur5Controller : public ControllerBase
 
             planningutils::RetimeActiveDOFTrajectory(traj,_probot,false,1.0,1.0,"ParabolicTrajectoryRetimer");
             for(int i=0; i < traj->GetNumWaypoints(); i++) {
-                ROS_ERROR("In here! %d", i);
                 trajectory_msgs::JointTrajectoryPoint ros_waypoint;
 
                 vector <dReal> or_waypoint;
@@ -182,8 +181,6 @@ class Ur5Controller : public ControllerBase
                 dReal deltatime;
                 traj->GetConfigurationSpecification().ExtractDeltaTime(deltatime,
                                                                         or_waypoint.begin());
-
-                                                                        ROS_ERROR("In here! %f", deltatime);
 
                 trajectory.points[i].positions.resize(6);
                 trajectory.points[i].velocities.resize(6);
