@@ -17,6 +17,7 @@
 
 from openravepy import *
 import time
+from numpy import *
 import IPython
 
 def create_ur5(env, urdf_path=None, srdf_path=None):
@@ -30,15 +31,7 @@ def create_ur5(env, urdf_path=None, srdf_path=None):
         name = module.SendCommand('LoadURI {} {}'.format(urdf_path, srdf_path))
         robot = env.GetRobot(name)
 
-    manip = robot.SetActiveManipulator(robot.GetManipulators()[0])
-    ikmodel = databases.inversekinematics.InverseKinematicsModel(robot,
-                                                                 iktype=IkParameterization.Type.Transform6D)
-    if not ikmodel.load():
-        ikmodel.autogenerate()
 
-    # Required for or_rviz to work with the robot's interactive marker.
-    ik_solver = RaveCreateIkSolver(env, ikmodel.getikname())
-    manip.SetIkSolver(ik_solver)
 
     # Needed for find a grasp function (not parsed using or_urdf hence needs manual setting)
     robot.GetManipulators()[0].SetChuckingDirection([1.0])
@@ -61,20 +54,96 @@ def create_ur5(env, urdf_path=None, srdf_path=None):
 
 if __name__ == "__main__":
     env = Environment()
+    env.Load('test_env.xml')
     env.SetViewer('qtcoin')
 
     # At this point, the robot should load in the viewer and replicate the
     # current configuration of the physical robot.
     robot = create_ur5(env)
 
+    manip = robot.SetActiveManipulator(robot.GetManipulators()[0])
+    ikmodel = databases.inversekinematics.InverseKinematicsModel(robot,
+                                                                 iktype=IkParameterization.Type.Transform6D)
+    if not ikmodel.load():
+        ikmodel.autogenerate()
+
+    # Required for or_rviz to work with the robot's interactive marker.
+    ik_solver = RaveCreateIkSolver(env, ikmodel.getikname())
+    manip.SetIkSolver(ik_solver)
+
+    # time.sleep(3)
+
+    robot.SetTransform(array([[  1.26915621e-01,   9.91913517e-01,   1.18245318e-07, 6.25871897e-01],
+                              [ -9.91913517e-01,   1.26915621e-01,  -1.04079755e-07, -7.71137774e-02],
+                              [ -1.18245294e-07,  -1.04079782e-07,   1.00000000e+00, 7.75881767e-01],
+                              [  0.00000000e+00,   0.00000000e+00,   0.00000000e+00, 1.00000000e+00]]))
+
+    # robot.SetDOFValues(array([ 1.91162348, -0.97853786,  2.21942425,  0.        , -0.90290195,
+    #     2.39421415,  0.12924275]))
+
     # Some simple manipulation task to check that the controller can control the
     # physical robot.
 
-    # manipprob = interfaces.BaseManipulation(robot) # create the interface for basic manipulation programs
+    # time.sleep(3)
+
+    while True:
+        try:
+            action = float(raw_input("direction: "))
+            if action == 8.0:   # Forward
+                xOffset = -0.05
+                yOffset = 0.0
+            elif action == 2.0: # Backwards
+                xOffset = 0.1
+                yOffset = 0.0
+            elif action == 4.0: # Left
+                xOffset = 0.0
+                yOffset = -0.05
+            elif action == 6.0: # Right
+                xOffset = 0.0
+                yOffset = 0.05
+            else:
+                xOffset = 0.0
+                yOffset = 0.0
+
+            manipprob = interfaces.BaseManipulation(robot) # create the interface for basic manipulation programs
+
+            t = robot.GetManipulators()[0].GetTransform()
+            x_initial = t[0][3]
+            y_initial = t[1][3]
+
+            x_goal = x_initial - xOffset
+            y_goal = y_initial - yOffset
+
+            x = x_goal - x_initial
+            y = y_goal - y_initial
+
+            direction = [x, y, 0] / linalg.norm([x, y, 0])
+            step_size = 0.01
+            max_steps = (linalg.norm([x, y, 0]) / step_size) + 1
+            min_steps = max_steps / 2
+            start_transform = t
+
+            try:
+                traj = manipprob.MoveHandStraight(direction=direction,
+                                           starteematrix=start_transform,
+                                           stepsize=step_size,
+                                           minsteps=min_steps,
+                                           maxsteps=max_steps,
+                                           outputtraj=True,
+                                           )
+                #print traj
+            except planning_error,e:
+                print e
+        except KeyboardInterrupt:
+            break
+
+    # manipprob.MoveToHandPosition(matrices=[current_hand_transform], seedik=10)
+    # robot.WaitForController(0)
+
     # manipprob.MoveManipulator(goal=[0, -1.57, 0, 0, 0, 0]) # call motion planner with goal joint angles
     # robot.WaitForController(0) # wait
-
-    task_manipulation = interfaces.TaskManipulation(robot)
-    task_manipulation.CloseFingers()
+    #
+    # task_manipulation = interfaces.TaskManipulation(robot)
+    # task_manipulation.CloseFingers()
 
     IPython.embed()
