@@ -25,9 +25,11 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 #include "plugindefs.h"
+#include <openrave/planningutils.h>
 
 using namespace std;
 using namespace OpenRAVE;
+//using namespace OpenRAVE::planningutils;
 
 typedef actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> TrajClient;
 
@@ -97,6 +99,11 @@ class Ur5Controller : public ControllerBase
                 _nControlTransformation = nControlTransformation;
             }
 
+            OpenRAVE::EnvironmentMutex::scoped_lock lockenv(_penv->GetMutex());
+            static const dReal arr[] = {0.4,0.4,0.4,0.4,0.4,0.4};
+            vector<dReal> velocity_limits (arr, arr + sizeof(arr) / sizeof(arr[0]) );
+            _probot->SetDOFVelocityLimits(velocity_limits);
+
             _pn = new ros::NodeHandle();
 
             // Subscribe to the topic that the robot publishes changes to joint values.
@@ -154,16 +161,29 @@ class Ur5Controller : public ControllerBase
             trajectory.joint_names[4] = "wrist_2_joint";
             trajectory.joint_names[5] = "wrist_3_joint";
 
-            for(int i=0; i < ptraj->GetNumWaypoints(); i++) {
+
+            TrajectoryBasePtr traj = RaveCreateTrajectory(_penv, ptraj->GetXMLId());
+            traj->Init(_probot->GetConfigurationSpecification());
+            traj->Clone(ptraj, Clone_Bodies);
+
+            planningutils::RetimeActiveDOFTrajectory(traj,_probot,false,1.0,1.0,"ParabolicTrajectoryRetimer");
+            for(int i=0; i < traj->GetNumWaypoints(); i++) {
+                ROS_ERROR("In here! %d", i);
                 trajectory_msgs::JointTrajectoryPoint ros_waypoint;
 
                 vector <dReal> or_waypoint;
-                ptraj->GetWaypoint(i, or_waypoint);
+                traj->GetWaypoint(i, or_waypoint);
                 std::vector <dReal> values(6);
-                ptraj->GetConfigurationSpecification().ExtractJointValues(values.begin(),
+                traj->GetConfigurationSpecification().ExtractJointValues(values.begin(),
                                                                             or_waypoint.begin(),
                                                                             _probot,
                                                                             _dofindices);
+
+                dReal deltatime;
+                traj->GetConfigurationSpecification().ExtractDeltaTime(deltatime,
+                                                                        or_waypoint.begin());
+
+                                                                        ROS_ERROR("In here! %f", deltatime);
 
                 trajectory.points[i].positions.resize(6);
                 trajectory.points[i].velocities.resize(6);
@@ -174,7 +194,10 @@ class Ur5Controller : public ControllerBase
                   trajectory.points[i].velocities[j] = 0.0;
                 }
 
-                trajectory.points[i].time_from_start = ros::Duration(3)*i;
+                if (i>0)
+                  trajectory.points[i].time_from_start = trajectory.points[i-1].time_from_start + ros::Duration(deltatime);
+                else
+                  trajectory.points[0].time_from_start = ros::Duration(0);
             }
 
             return trajectory;
