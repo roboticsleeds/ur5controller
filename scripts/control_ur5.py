@@ -35,14 +35,14 @@ def create_ur5(env, urdf_path=None, srdf_path=None):
     robot.GetManipulators()[0].SetChuckingDirection([1.0])
     robot.GetManipulators()[0].SetLocalToolDirection([1.0, 0, 0])
 
-    multicontroller = RaveCreateMultiController(env, "")
-    robot.SetController(multicontroller)
-
-    robot_controller = RaveCreateController(env,'ur5controller')
-    hand_controller = RaveCreateController(env, 'robotiqcontroller')
-
-    multicontroller.AttachController(robot_controller, [7, 6, 0, 9, 10, 11], 0)
-    multicontroller.AttachController(hand_controller, [8], 0)
+    # multicontroller = RaveCreateMultiController(env, "")
+    # robot.SetController(multicontroller)
+    #
+    # robot_controller = RaveCreateController(env,'ur5controller')
+    # hand_controller = RaveCreateController(env, 'robotiqcontroller')
+    #
+    # multicontroller.AttachController(robot_controller, [7, 6, 0, 9, 10, 11], 0)
+    # multicontroller.AttachController(hand_controller, [8], 0)
 
     manip = robot.SetActiveManipulator(robot.GetManipulators()[0])
     ikmodel = databases.inversekinematics.InverseKinematicsModel(robot, iktype=IkParameterization.Type.Transform6D)
@@ -57,6 +57,39 @@ def create_ur5(env, urdf_path=None, srdf_path=None):
     env.Add(robot, True)
     return robot
 
+def move_hand_straight(start_transform, x_offset, y_offset):
+    x_initial = start_transform[0][3]
+    y_initial = start_transform[1][3]
+
+    x_goal = x_initial - x_offset
+    y_goal = y_initial - y_offset
+
+    x = x_goal - x_initial
+    y = y_goal - y_initial
+
+    direction = [x, y, 0] / linalg.norm([x, y, 0])
+    step_size = 0.01
+    max_steps = (linalg.norm([x, y, 0]) / step_size) + 1
+    min_steps = max_steps / 2
+
+    try:
+        manipprob.MoveHandStraight(direction=direction,
+                                   starteematrix=start_transform,
+                                   stepsize=step_size,
+                                   minsteps=min_steps,
+                                   maxsteps=max_steps)
+        robot.WaitForController(0)
+    except planning_error, e:
+        print e
+
+def rotate_hand(rotation_matrix):
+    current_hand_transform = robot.GetManipulators()[0].GetTransform()
+    goal_transform = numpy.dot(current_hand_transform, rotation_matrix)
+    ik_solution = manip.FindIKSolution(goal_transform, IkFilterOptions.CheckEnvCollisions) # get collision-free solution
+    try:
+        manipprob.MoveManipulator(goal=ik_solution)
+    except planning_error, e:
+        print e
 
 if __name__ == "__main__":
     env = Environment()
@@ -67,19 +100,18 @@ if __name__ == "__main__":
     # current configuration of the physical robot.
     robot = create_ur5(env)
 
+    robot.SetTransform(array([[ 9.99945700e-01, -1.04210156e-02, -1.24229304e-09, 3.03276211e-01],
+                              [ 1.04210156e-02,  9.99945700e-01, -6.45894224e-12, -1.31079838e-01],
+                              [ 1.24229289e-09, -6.48736357e-12,  1.00000000e+00, 2.52894759e-02],
+                              [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00, 1.00000000e+00]]))
 
-    robot.SetTransform(array([[  9.99945700e-01,  -1.04210156e-02,  -1.24229304e-09, 2.35965818e-01],
-                              [  1.04210156e-02,   9.99945700e-01,  -6.45894224e-12, -1.31069273e-01],
-                              [  1.24229289e-09,  -6.48736357e-12,   1.00000000e+00, 2.35009789e-02],
-                              [  0.00000000e+00,   0.00000000e+00,   0.00000000e+00, 1.00000000e+00]]))
-
-    # robot.SetDOFValues(array([ 1.91162348, -0.97853786,  2.21942425,  0. , -0.90290195, 2.39421415,  0.12924275]))
-
-
+    robot.SetDOFValues(array([ 1.53822374, 0, 0, 0, 0, 0, -0.81608755, 1.58696198, 0, -0.73290283, 1.61193109, 0.0235535]))
 
     print "===================================================================="
     print "                         UR5 CONTROLLER DEMO"
     print "===================================================================="
+    print ""
+    print "Controlling UR5 Robot in 2D over a table."
     print ""
     print "=========="
     print "   MENU"
@@ -103,70 +135,53 @@ if __name__ == "__main__":
     print "'exit' to stop the demo."
 
     manipprob = interfaces.BaseManipulation(robot) # create the interface for basic manipulation programs
+    task_manipulation = interfaces.TaskManipulation(robot)
+    manip = robot.SetActiveManipulator(robot.GetManipulators()[0])
     OFFSET = 0.07
 
     while True:
         action = raw_input("Menu Action: ")
-        if action == "exit":
+        if action == "exit":  # EXIT Demo
             break
-        if action == "q":
+        if action == "q":     # Rotate Anti-clockwise
+            rotation_matrix = matrixFromAxisAngle([0, 0, -numpy.pi/6])
+            rotate_hand(rotation_matrix)
+        elif action == "e":   # Rotate Clockwise
+            rotation_matrix = matrixFromAxisAngle([0, 0, numpy.pi/6])
+            rotate_hand(rotation_matrix)
+        elif action == "o":   # Open Gripper
             pass
-        elif action == "e":
-            pass
-        elif action == "o":
-            pass
-        elif action == "c":
-            pass
-        else:
+        elif action == "c":   # Close Gripper
+            task_manipulation.CloseFingers()
+        elif action in ["w", "s", "a", "d"]:
+            start_transform = robot.GetManipulators()[0].GetEndEffectorTransform()
+
             if action == "w":   # Forward
-                xOffset = -OFFSET
-                yOffset = 0.0
+                x_offset = OFFSET
+                y_offset = 0
             elif action == "s": # Backwards
-                xOffset = OFFSET
-                yOffset = 0.0
+                x_offset = -OFFSET
+                y_offset = 0
             elif action == "a": # Left
-                xOffset = 0.0
-                yOffset = -OFFSET
+                x_offset = 0
+                y_offset = OFFSET
             elif action == "d": # Right
-                xOffset = 0.0
-                yOffset = OFFSET
-            else: # wrong input, do nothing.
-                xOffset = 0.0
-                yOffset = 0.0
+                x_offset = 0
+                y_offset = -OFFSET
 
-            t = robot.GetManipulators()[0].GetTransform()
-            x_initial = t[0][3]
-            y_initial = t[1][3]
+            current_hand_transform = robot.GetManipulators()[0].GetTransform()
+            x = numpy.identity(4)
 
-            x_goal = x_initial - xOffset
-            y_goal = y_initial - yOffset
+            x[0, 3] += x_offset
+            x[1, 3] += y_offset
 
-            x = x_goal - x_initial
-            y = y_goal - y_initial
-
-            direction = [x, y, 0] / linalg.norm([x, y, 0])
-            step_size = 0.01
-            max_steps = (linalg.norm([x, y, 0]) / step_size) + 1
-            min_steps = max_steps / 2
-            start_transform = t
-
+            goal_transform = numpy.dot(current_hand_transform, x)
+            ik_solution = manip.FindIKSolution(goal_transform, IkFilterOptions.CheckEnvCollisions) # get collision-free solution
             try:
-                manipprob.MoveHandStraight(direction=direction,
-                                           starteematrix=start_transform,
-                                           stepsize=step_size,
-                                           minsteps=min_steps,
-                                           maxsteps=max_steps)
-                robot.WaitForController(0)
-            except planning_error,e:
+                manipprob.MoveManipulator(goal=ik_solution)
+            except planning_error, e:
                 print e
 
-    # manipprob.MoveToHandPosition(matrices=[current_hand_transform], seedik=10)
-    # robot.WaitForController(0)
-
-    # manipprob.MoveManipulator(goal=[0, -1.57, 0, 0, 0, 0]) # call motion planner with goal joint angles
-    # robot.WaitForController(0) # wait
-    #
-    # task_manipulation = interfaces.TaskManipulation(robot)
-    # task_manipulation.CloseFingers()
+            # move_hand_straight(start_transform, x_offset, y_offset)
 
     IPython.embed()
