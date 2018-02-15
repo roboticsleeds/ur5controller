@@ -37,7 +37,7 @@
     </visual>
   </link>
 
-  <joint name="front_rocker" type="revolute">
+  <joint name="front_rocker" type="fixed">
     <parent link="axle_link"/>
     <child link="front_rocker_link"/>
     <origin rpy="0 0 0" xyz="0.319 0 0"/>
@@ -60,7 +60,7 @@
     </inertial>
   </link>
 
-  <joint name="front_left_wheel" type="continuous">
+  <joint name="front_left_wheel" type="fixed">
     <parent link="front_rocker_link"/>
     <child link="front_left_wheel_link"/>
     <origin rpy="0 0 0" xyz="0 0.2755 0"/>
@@ -119,7 +119,7 @@
     </inertial>
   </link>
 
-  <joint name="front_right_wheel" type="continuous">
+  <joint name="front_right_wheel" type="fixed">
     <parent link="front_rocker_link"/>
     <child link="front_right_wheel_link"/>
     <origin rpy="0 0 0" xyz="0 -0.2755 0"/>
@@ -180,7 +180,7 @@
     </inertial>
   </link>
 
-  <joint name="rear_left_wheel" type="continuous">
+  <joint name="rear_left_wheel" type="fixed">
     <parent link="rear_rocker_link"/>
     <child link="rear_left_wheel_link"/>
     <origin rpy="0 0 0" xyz="0 0.2755 0"/>
@@ -218,7 +218,7 @@
     </inertial>
   </link>
 
-  <joint name="rear_right_wheel" type="continuous">
+  <joint name="rear_right_wheel" type="fixed">
     <parent link="rear_rocker_link"/>
     <child link="rear_right_wheel_link"/>
     <origin rpy="0 0 0" xyz="0 -0.2755 0"/>
