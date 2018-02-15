@@ -31,18 +31,18 @@ def create_ur5(env, urdf_path=None, srdf_path=None):
         name = module.SendCommand('LoadURI {} {}'.format(urdf_path, srdf_path))
         robot = env.GetRobot(name)
 
+    multicontroller = RaveCreateMultiController(env, "")
+    robot.SetController(multicontroller)
+
+    robot_controller = RaveCreateController(env,'ur5controller')
+    hand_controller = RaveCreateController(env, 'robotiqcontroller')
+
+    multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
+    multicontroller.AttachController(hand_controller, [3], 0)
+
     # Needed for find a grasp function (not parsed using or_urdf hence needs manual setting)
     robot.GetManipulators()[0].SetChuckingDirection([1.0])
     robot.GetManipulators()[0].SetLocalToolDirection([1.0, 0, 0])
-
-    # multicontroller = RaveCreateMultiController(env, "")
-    # robot.SetController(multicontroller)
-    #
-    # robot_controller = RaveCreateController(env,'ur5controller')
-    # hand_controller = RaveCreateController(env, 'robotiqcontroller')
-    #
-    # multicontroller.AttachController(robot_controller, [7, 6, 0, 9, 10, 11], 0)
-    # multicontroller.AttachController(hand_controller, [8], 0)
 
     manip = robot.SetActiveManipulator(robot.GetManipulators()[0])
     ikmodel = databases.inversekinematics.InverseKinematicsModel(robot, iktype=IkParameterization.Type.Transform6D)
@@ -57,37 +57,33 @@ def create_ur5(env, urdf_path=None, srdf_path=None):
     env.Add(robot, True)
     return robot
 
-def move_hand_straight(start_transform, x_offset, y_offset):
-    x_initial = start_transform[0][3]
-    y_initial = start_transform[1][3]
+def safety_check(trajectory_object):
+    waypoints = trajectory_object.GetAllWaypoints2D()
+    waypoint_sums = [0, 0, 0, 0, 0, 0]
+    for i in range(0, len(waypoints) - 1):
+        for j in range(0, 6):
+            difference = abs(waypoints[i][j] - waypoints[i+1][j])
+            waypoint_sums[j] += difference
 
-    x_goal = x_initial - x_offset
-    y_goal = y_initial - y_offset
+    waypoint_below_threshold = [x < numpy.pi/3 for x in waypoint_sums]
 
-    x = x_goal - x_initial
-    y = y_goal - y_initial
+    if all(waypoint_below_threshold):
+        return True
 
-    direction = [x, y, 0] / linalg.norm([x, y, 0])
-    step_size = 0.01
-    max_steps = (linalg.norm([x, y, 0]) / step_size) + 1
-    min_steps = max_steps / 2
-
-    try:
-        manipprob.MoveHandStraight(direction=direction,
-                                   starteematrix=start_transform,
-                                   stepsize=step_size,
-                                   minsteps=min_steps,
-                                   maxsteps=max_steps)
-        robot.WaitForController(0)
-    except planning_error, e:
-        print e
+    return False
 
 def rotate_hand(rotation_matrix):
     current_hand_transform = robot.GetManipulators()[0].GetTransform()
     goal_transform = numpy.dot(current_hand_transform, rotation_matrix)
     ik_solution = manip.FindIKSolution(goal_transform, IkFilterOptions.CheckEnvCollisions) # get collision-free solution
+
     try:
-        manipprob.MoveManipulator(goal=ik_solution)
+        trajectory_object = manipprob.MoveManipulator(goal=ik_solution, execute=False, outputtrajobj=True)
+        if safety_check(trajectory_object):
+            robot.GetController().SetPath(trajectory_object)
+            robot.WaitForController(0)
+        else:
+            print "This trajectory failed the safety check."
     except planning_error, e:
         print e
 
@@ -105,7 +101,7 @@ if __name__ == "__main__":
                               [ 1.24229289e-09, -6.48736357e-12,  1.00000000e+00, 2.52894759e-02],
                               [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00, 1.00000000e+00]]))
 
-    robot.SetDOFValues(array([ 1.53822374, 0, 0, 0, 0, 0, -0.81608755, 1.58696198, 0, -0.73290283, 1.61193109, 0.0235535]))
+    # robot.SetDOFValues(array([ 1.53822374, 0, 0, 0, 0, 0, -0.81608755, 1.58696198, 0, -0.73290283, 1.61193109, 0.0235535]))
 
     print "===================================================================="
     print "                         UR5 CONTROLLER DEMO"
@@ -164,10 +160,10 @@ if __name__ == "__main__":
                 y_offset = 0
             elif action == "a": # Left
                 x_offset = 0
-                y_offset = OFFSET
+                y_offset = -OFFSET
             elif action == "d": # Right
                 x_offset = 0
-                y_offset = -OFFSET
+                y_offset = OFFSET
 
             current_hand_transform = robot.GetManipulators()[0].GetTransform()
             x = numpy.identity(4)
@@ -177,11 +173,15 @@ if __name__ == "__main__":
 
             goal_transform = numpy.dot(current_hand_transform, x)
             ik_solution = manip.FindIKSolution(goal_transform, IkFilterOptions.CheckEnvCollisions) # get collision-free solution
+
             try:
-                manipprob.MoveManipulator(goal=ik_solution)
+                trajectory_object = manipprob.MoveManipulator(goal=ik_solution, execute=False, outputtrajobj=True)
+                if safety_check(trajectory_object):
+                    robot.GetController().SetPath(trajectory_object)
+                    robot.WaitForController(0)
+                else:
+                    print "This trajectory failed the safety check."
             except planning_error, e:
                 print e
-
-            # move_hand_straight(start_transform, x_offset, y_offset)
 
     IPython.embed()
