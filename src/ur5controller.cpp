@@ -100,7 +100,7 @@ class Ur5Controller : public ControllerBase
             }
 
             OpenRAVE::EnvironmentMutex::scoped_lock lockenv(_penv->GetMutex());
-            static const dReal arr[] = {0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4};
+            static const dReal arr[] = {0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4};
             vector<dReal> velocity_limits (arr, arr + sizeof(arr) / sizeof(arr[0]) );
             _probot->SetDOFVelocityLimits(velocity_limits);
 
@@ -161,22 +161,20 @@ class Ur5Controller : public ControllerBase
             trajectory.joint_names[4] = "wrist_2_joint";
             trajectory.joint_names[5] = "wrist_3_joint";
 
-
             TrajectoryBasePtr traj = RaveCreateTrajectory(_penv, ptraj->GetXMLId());
             traj->Init(_probot->GetConfigurationSpecification());
             traj->Clone(ptraj, Clone_Bodies);
 
-            planningutils::RetimeActiveDOFTrajectory(traj,_probot,false,1.0,1.0,"ParabolicTrajectoryRetimer");
+            // planningutils::RetimeActiveDOFTrajectory(traj, _probot, false, 1.0, 1.0, "ParabolicTrajectoryRetimer");
             for(int i=0; i < traj->GetNumWaypoints(); i++) {
                 trajectory_msgs::JointTrajectoryPoint ros_waypoint;
-
                 vector <dReal> or_waypoint;
                 traj->GetWaypoint(i, or_waypoint);
                 std::vector <dReal> values(6);
                 traj->GetConfigurationSpecification().ExtractJointValues(values.begin(),
-                                                                            or_waypoint.begin(),
-                                                                            _probot,
-                                                                            _dofindices);
+                                                                         or_waypoint.begin(),
+                                                                         _probot,
+                                                                         _dofindices);
 
                 dReal deltatime;
                 traj->GetConfigurationSpecification().ExtractDeltaTime(deltatime,
