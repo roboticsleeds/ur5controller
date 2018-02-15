@@ -100,7 +100,7 @@ class Ur5Controller : public ControllerBase
             }
 
             OpenRAVE::EnvironmentMutex::scoped_lock lockenv(_penv->GetMutex());
-            static const dReal arr[] = {0.4,0.4,0.4,0.4,0.4,0.4,0.4};
+            static const dReal arr[] = {0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4};
             vector<dReal> velocity_limits (arr, arr + sizeof(arr) / sizeof(arr[0]) );
             _probot->SetDOFVelocityLimits(velocity_limits);
 
