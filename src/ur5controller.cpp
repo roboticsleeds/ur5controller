@@ -100,7 +100,7 @@ class Ur5Controller : public ControllerBase
             }
 
             OpenRAVE::EnvironmentMutex::scoped_lock lockenv(_penv->GetMutex());
-            static const dReal arr[] = {0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4};
+            static const dReal arr[] = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2};
             vector<dReal> velocity_limits (arr, arr + sizeof(arr) / sizeof(arr[0]) );
             _probot->SetDOFVelocityLimits(velocity_limits);
 
@@ -139,7 +139,21 @@ class Ur5Controller : public ControllerBase
         {
             if (ptraj != NULL)
             {
-              trajectory_msgs::JointTrajectory trajectory = FromOpenRaveToRosTrajectory(ptraj);
+
+              // traj->GetConfigurationSpecification().GetGroupFromName("iswaypoint")
+
+              TrajectoryBasePtr traj = RaveCreateTrajectory(_penv, ptraj->GetXMLId());
+              traj->Init(_probot->GetConfigurationSpecification());
+              traj->Clone(ptraj, Clone_Bodies);
+
+              PlannerStatus status = planningutils::RetimeTrajectory(traj, false, 1.0, 1.0, "ParabolicTrajectoryRetimer");
+              if (status != PS_HasSolution)
+              {
+                ROS_ERROR("Not executing trajectory because retimer failed.");
+                return false;
+              }
+
+              trajectory_msgs::JointTrajectory trajectory = FromOpenRaveToRosTrajectory(traj);
               control_msgs::FollowJointTrajectoryGoal goal;
               goal.trajectory = trajectory;
               _ac->sendGoal(goal);
@@ -148,12 +162,12 @@ class Ur5Controller : public ControllerBase
             return true;
         }
 
-        trajectory_msgs::JointTrajectory FromOpenRaveToRosTrajectory(TrajectoryBaseConstPtr ptraj) {
+        trajectory_msgs::JointTrajectory FromOpenRaveToRosTrajectory(TrajectoryBasePtr traj) {
             trajectory_msgs::JointTrajectory trajectory;
             trajectory.header.stamp = ros::Time::now();
             trajectory.header.frame_id = "base_link";
             trajectory.joint_names.resize(6);
-            trajectory.points.resize(ptraj->GetNumWaypoints());
+            trajectory.points.resize(traj->GetNumWaypoints());
             trajectory.joint_names[0] = "shoulder_pan_joint";
             trajectory.joint_names[1] = "shoulder_lift_joint";
             trajectory.joint_names[2] = "elbow_joint";
@@ -161,11 +175,6 @@ class Ur5Controller : public ControllerBase
             trajectory.joint_names[4] = "wrist_2_joint";
             trajectory.joint_names[5] = "wrist_3_joint";
 
-            TrajectoryBasePtr traj = RaveCreateTrajectory(_penv, ptraj->GetXMLId());
-            traj->Init(_probot->GetConfigurationSpecification());
-            traj->Clone(ptraj, Clone_Bodies);
-
-            // planningutils::RetimeActiveDOFTrajectory(traj, _probot, false, 1.0, 1.0, "ParabolicTrajectoryRetimer");
             for(int i=0; i < traj->GetNumWaypoints(); i++) {
                 trajectory_msgs::JointTrajectoryPoint ros_waypoint;
                 vector <dReal> or_waypoint;
