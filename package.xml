@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>ur5controller</name>
+  <version>1.0.0</version>
+  <description>
+    OpenRAVE Controller for UR5 Robot.
+  </description>
+  <url type="website">https://github.com/papallas/ur5controller</url>
+  <url type="repository">https://github.com/papallas/ur5controller.git</url>
+  <url type="bugtracker">https://github.com/papallas/ur5controller/issues</url>
+  <maintainer email="sc13rp@leeds.ac.uk">Rafael Papallas</maintainer>
+  <author email="sc13rp@leeds.ac.uk">Rafael Papallas</author>
+  <author email="m.r.dogar@leeds.ac.uk">Dr. Mehmet Dogar</author>
+  <license>GPLv3</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>openrave_catkin</depend>
+  <depend>boost</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>roscpp</depend>
+  <depend>trajectory_msgs</depend>
+  <depend>robotiq_c_model_control</depend>
+  <depend>tf</depend>
+  <depend>actionlib</depend>
+  <depend>actionlib_msgs</depend>
+  <depend>control_msgs</depend>
+  <export>
+    <rviz plugin="${prefix}/plugins.xml"/>
+  </export>
+</package>

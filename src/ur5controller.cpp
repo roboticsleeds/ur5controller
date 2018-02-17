@@ -20,10 +20,19 @@
 #include "std_msgs/String.h"
 #include "sensor_msgs/JointState.h"
 #include "trajectory_msgs/JointTrajectory.h"
+#include "control_msgs/FollowJointTrajectoryGoal.h"
+#include "control_msgs/FollowJointTrajectoryAction.h"
+#include <actionlib/client/simple_action_client.h>
+#include <actionlib/client/terminal_state.h>
 #include "plugindefs.h"
+#include <openrave/planningutils.h>
 
 using namespace std;
 using namespace OpenRAVE;
+//using namespace OpenRAVE::planningutils;
+
+typedef actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> TrajClient;
+
 
 /**
 	This is a controller for the UR5 robot. The main purpose of this class is to
@@ -60,17 +69,18 @@ class Ur5Controller : public ControllerBase
             }
 
             // Create a joint vector for angles and assign the new values from message.
-            std::vector<double> joint_angles;
+            std::vector<double> joint_angles(6);
             for (unsigned int i = 0; i < (msg->position).size(); i++)
             {
-                joint_angles.push_back((msg->position).at(i));
+                joint_angles[i] = (msg->position).at(i);
             }
 
             // Set DOF Values of the joint angles just received from message to the
             // robot in OpenRAVE.
             OpenRAVE::EnvironmentMutex::scoped_lock lockenv(_penv->GetMutex());
             _probot->SetDOFValues(joint_angles,
-                                  KinBody::CLA_CheckLimitsSilent);
+                                  KinBody::CLA_CheckLimitsSilent,
+                                  _dofindices);
         }
 
         /**
@@ -89,17 +99,19 @@ class Ur5Controller : public ControllerBase
                 _nControlTransformation = nControlTransformation;
             }
 
+            OpenRAVE::EnvironmentMutex::scoped_lock lockenv(_penv->GetMutex());
+            static const dReal arr[] = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2};
+            vector<dReal> velocity_limits (arr, arr + sizeof(arr) / sizeof(arr[0]) );
+            _probot->SetDOFVelocityLimits(velocity_limits);
+
             _pn = new ros::NodeHandle();
 
             // Subscribe to the topic that the robot publishes changes to joint values.
             _joint_angles_sub = _pn->subscribe("/joint_states", 1, &Ur5Controller::JointStateCallback, this);
-
-            // Publisher to /arm_controller/command, will publish to the robot the new joint values.
-            _move_arm_pub = _pn->advertise<trajectory_msgs::JointTrajectory>("/arm_controller/command", 1);
-
-            _traj = RaveCreateTrajectory(_penv, "");
-            _traj->Init(robot->GetConfigurationSpecification());
             _initialized = true;
+
+            _ac = new TrajClient("follow_joint_trajectory", true);
+            _ac->waitForServer(); //will wait for infinite time
 
             return true;
         }
@@ -127,93 +139,72 @@ class Ur5Controller : public ControllerBase
         {
             if (ptraj != NULL)
             {
-                _traj = RaveCreateTrajectory(GetEnv(), ptraj->GetXMLId());
-                _traj->Clone(ptraj, Clone_Bodies);
+
+              // traj->GetConfigurationSpecification().GetGroupFromName("iswaypoint")
+
+              TrajectoryBasePtr traj = RaveCreateTrajectory(_penv, ptraj->GetXMLId());
+              traj->Init(_probot->GetConfigurationSpecification());
+              traj->Clone(ptraj, Clone_Bodies);
+
+              PlannerStatus status = planningutils::RetimeTrajectory(traj, false, 1.0, 1.0, "ParabolicTrajectoryRetimer");
+              if (status != PS_HasSolution)
+              {
+                ROS_ERROR("Not executing trajectory because retimer failed.");
+                return false;
+              }
+
+              trajectory_msgs::JointTrajectory trajectory = FromOpenRaveToRosTrajectory(traj);
+              control_msgs::FollowJointTrajectoryGoal goal;
+              goal.trajectory = trajectory;
+              _ac->sendGoal(goal);
             }
 
             return true;
         }
 
-        double IsSameArmConfig(vector<double> &config1, vector<double> &config2)
-        {
-            for (unsigned int i = 0; i < config1.size(); i++)
-            {
-                if (std::fabs(config1[i] - config2[i]) > 0.01)
+        trajectory_msgs::JointTrajectory FromOpenRaveToRosTrajectory(TrajectoryBasePtr traj) {
+            trajectory_msgs::JointTrajectory trajectory;
+            trajectory.header.stamp = ros::Time::now();
+            trajectory.header.frame_id = "base_link";
+            trajectory.joint_names.resize(6);
+            trajectory.points.resize(traj->GetNumWaypoints());
+            trajectory.joint_names[0] = "shoulder_pan_joint";
+            trajectory.joint_names[1] = "shoulder_lift_joint";
+            trajectory.joint_names[2] = "elbow_joint";
+            trajectory.joint_names[3] = "wrist_1_joint";
+            trajectory.joint_names[4] = "wrist_2_joint";
+            trajectory.joint_names[5] = "wrist_3_joint";
+
+            for(int i=0; i < traj->GetNumWaypoints(); i++) {
+                trajectory_msgs::JointTrajectoryPoint ros_waypoint;
+                vector <dReal> or_waypoint;
+                traj->GetWaypoint(i, or_waypoint);
+                std::vector <dReal> values(6);
+                traj->GetConfigurationSpecification().ExtractJointValues(values.begin(),
+                                                                         or_waypoint.begin(),
+                                                                         _probot,
+                                                                         _dofindices);
+
+                dReal deltatime;
+                traj->GetConfigurationSpecification().ExtractDeltaTime(deltatime,
+                                                                        or_waypoint.begin());
+
+                trajectory.points[i].positions.resize(6);
+                trajectory.points[i].velocities.resize(6);
+
+                for (int j = 0; j < 6; j++)
                 {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        bool IsArmAtConfig(vector<double> &config)
-        {
-            std::vector<double> current_arm_config;
-            static const int arr[] = {0, 1, 2, 3, 4, 5};
-            vector<int> dofindices(arr, arr + sizeof(arr) / sizeof(arr[0]));
-            _probot->GetDOFValues(current_arm_config, dofindices);
-
-            return IsSameArmConfig(current_arm_config, config);
-        }
-
-        bool MoveArm(vector<double> values)
-        {
-            if (ros::ok() && !_paused)
-            {
-                trajectory_msgs::JointTrajectory trajectory;
-                trajectory_msgs::JointTrajectoryPoint points_n;
-
-                trajectory.header.stamp = ros::Time::now();
-                trajectory.header.frame_id = "base_link";
-                trajectory.joint_names.resize(6);
-                trajectory.points.resize(1);
-
-                trajectory.points[0].positions.resize(6);
-
-                trajectory.joint_names[0] = "elbow_joint";
-                trajectory.joint_names[1] = "shoulder_lift_joint";
-                trajectory.joint_names[2] = "shoulder_pan_joint";
-                trajectory.joint_names[3] = "wrist_1_joint";
-                trajectory.joint_names[4] = "wrist_2_joint";
-                trajectory.joint_names[5] = "wrist_3_joint";
-
-                for (int i = 0; i < 6; i++)
-                {
-                    trajectory.points[0].positions[i] = values[i];
+                  trajectory.points[i].positions[j] = values[j];
+                  trajectory.points[i].velocities[j] = 0.0;
                 }
 
-                trajectory.points[0].time_from_start = ros::Duration(1);
-
-                ROS_INFO("The new values are %f %f %f %f %f", values[0], values[1], values[2], values[3], values[4], values[5]);
-
-                // Publish Changes
-                _move_arm_pub.publish(trajectory);
-                ros::spinOnce();
-
-                // Store last values for later.
-                _last_arm_command = values;
-
-                return true;
+                if (i>0)
+                  trajectory.points[i].time_from_start = trajectory.points[i-1].time_from_start + ros::Duration(deltatime);
+                else
+                  trajectory.points[0].time_from_start = ros::Duration(0);
             }
 
-            return false;
-        }
-
-        bool MoveArmTowards(vector<double> &config)
-        {
-            if (IsArmAtConfig(config))
-            {
-                return true; // already there.
-            }
-
-            if (_last_arm_command.empty() || !IsSameArmConfig(_last_arm_command, config))
-            {
-                MoveArm(config);
-                _last_arm_command = config;
-            }
-
-            return false;
+            return trajectory;
         }
 
         virtual void SimulationStep(dReal fTimeElapsed)
@@ -223,38 +214,12 @@ class Ur5Controller : public ControllerBase
                 return;
             }
 
-            if (_traj->GetNumWaypoints() > 0)
-            {
-                vector <dReal> waypoint;
-
-                _traj->GetWaypoint(0, waypoint);
-
-                static const int arr[] = {0, 1, 2, 3, 4, 5};
-                std::vector<int> arm_indices(arr, arr + sizeof(arr) / sizeof(arr[0]));
-                std::vector <dReal> arm_goal(6);
-                bool arm_at_waypoint = true;
-
-                if (_traj->GetConfigurationSpecification().ExtractJointValues(arm_goal.begin(),
-                                                                              waypoint.begin(),
-                                                                              _probot,
-                                                                              arm_indices))
-                {
-                    arm_at_waypoint = MoveArmTowards(arm_goal);
-                }
-
-                if (arm_at_waypoint)
-                {
-                    // Remove the reached (first) way-point. Now the next way-point is the first way-point.
-                    _traj->Remove(0, 1);
-                }
-            }
-
             ros::spinOnce();
         }
 
         virtual bool IsDone()
         {
-            return _traj->GetNumWaypoints() == 0;
+            return _ac->waitForResult(ros::Duration(0.05));
         }
 
         virtual OpenRAVE::dReal GetTime() const
@@ -274,15 +239,13 @@ class Ur5Controller : public ControllerBase
         int _nControlTransformation;
 
         std::vector<int> _dofindices;
-        std::vector<double> _last_arm_command;
 
         ros::Subscriber _joint_angles_sub;
         ros::NodeHandle *_pn;
-        ros::Publisher _move_arm_pub;
+        TrajClient* _ac;
 
         RobotBasePtr _probot;
         EnvironmentBasePtr _penv;
-        TrajectoryBasePtr _traj;
 };
 
 ControllerBasePtr CreateUr5Controller(EnvironmentBasePtr penv, std::istream &sinput)
