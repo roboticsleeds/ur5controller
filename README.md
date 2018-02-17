@@ -15,7 +15,7 @@ This repository includes the following:
 
 ## Dependencies
 - [ur_modern_driver](https://github.com/ThomasTimm/ur_modern_driver) needs to be installed on the computer that controls the robot and you need to run `roslaunch ur_modern_driver ur5_bringup.launch robot_ip:=THE_IP_OF_UR5_ROBOT`.
-- [openrave_catkin](https://github.com/personalrobotics/openrave_catkin).
+- You need to install the [openrave_catkin](https://github.com/personalrobotics/openrave_catkin).
 - You need to install and configure another OpenRAVE plugin called `or_urdf` this plugin is available [here](https://github.com/personalrobotics/or_urdf). I have written a blog post on 
 how to install this plugin if you struggle to find a solution, find the tutorial [here](http://computingstories.com/robotics%20stories/installing-or_urdf-openrave-plugin.html).
 
@@ -27,6 +27,37 @@ how to install this plugin if you struggle to find a solution, find the tutorial
 
 ## Testing the controller
 There is a file called `control_ur5.py` under `scripts` that you can run and test the controller on the real robot.
+
+## Controller explained
+1. Load the robot in OpenRAVE using the URDF plugin:
+```python
+env = Environment()
+env.Load('test_env.xml')
+env.SetViewer('qtcoin')
+
+urdf_path = "package://ur5controller/ur5_description/ur5.urdf"
+srdf_path = "package://ur5controller/ur5_description/ur5.srdf"
+
+module = RaveCreateModule(env, 'urdf')
+with env:
+  name = module.SendCommand('LoadURI {} {}'.format(urdf_path, srdf_path))
+  robot = env.GetRobot(name)
+
+env.Add(robot, True)
+```
+2. You know need to attach the controllers (UR5 and the Robotiq controllers) to the robot using the `MultiController`:
+```python
+ multicontroller = RaveCreateMultiController(env, "")
+ robot.SetController(multicontroller)
+
+ robot_controller = RaveCreateController(env,'ur5controller')
+ hand_controller = RaveCreateController(env, 'robotiqcontroller')
+
+ multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
+ multicontroller.AttachController(hand_controller, [3], 0)
+```
+
+You are now set. The OpenRAVE robot should update as you change the configuration of the actual robot, and should also execute trajectories from OpenRAVE to the actual robot.
 
 ## Other Notes
 - This repository ships with an URDF and SRDF file that represents the robot in OpenRAVE. These however includes two specific things that might not be applicable to your configuration, the Robotiq Two-Finger Gripper and the Clearpath Ridgeback. If you are not interested in those, you can remove them easily by editting the `.URDF` file.
