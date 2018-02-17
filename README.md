@@ -18,6 +18,15 @@ This repository includes the following:
 - You need to install the [openrave_catkin](https://github.com/personalrobotics/openrave_catkin).
 - You need to install and configure another OpenRAVE plugin called `or_urdf` this plugin is available [here](https://github.com/personalrobotics/or_urdf). I have written a blog post on 
 how to install this plugin if you struggle to find a solution, find the tutorial [here](http://computingstories.com/robotics%20stories/installing-or_urdf-openrave-plugin.html).
+- **(OPTIONAL)** Install the Robotiq controller.
+  1. `cd ~/catkin/src`
+  2. `git clone git@github.com:ros-industrial/robotiq.git`
+  3. `cd robotiq`
+  4. `git checkout indigo-devel`
+  5. `rosdep install robotiq_modbus_tcp`
+  6. `sudo apt-get install ros-indigo-soem`
+  7. `cd ~/catkin_ws`
+  8. `catkin_make`
 
 ## Installation
 - Go to your catkin worksapce e.g `cd ~/catkin_ws/src` and clone this repository: `git clone git@github.com:papallas/ur5controller.git`
