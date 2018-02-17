@@ -56,14 +56,14 @@ env.Add(robot, True)
 ```
 2. You know need to attach the controllers (UR5 and the Robotiq controllers) to the robot using the `MultiController`:
 ```python
- multicontroller = RaveCreateMultiController(env, "")
- robot.SetController(multicontroller)
+multicontroller = RaveCreateMultiController(env, "")
+robot.SetController(multicontroller)
 
- robot_controller = RaveCreateController(env,'ur5controller')
- hand_controller = RaveCreateController(env, 'robotiqcontroller')
+robot_controller = RaveCreateController(env,'ur5controller')
+hand_controller = RaveCreateController(env, 'robotiqcontroller')
 
- multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
- multicontroller.AttachController(hand_controller, [3], 0)
+multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
+multicontroller.AttachController(hand_controller, [3], 0)
 ```
 
 You are now set. The OpenRAVE robot should update as you change the configuration of the actual robot, and should also execute trajectories from OpenRAVE to the actual robot.
@@ -73,19 +73,19 @@ You are now set. The OpenRAVE robot should update as you change the configuratio
    - Removing the Clearpath Ridgeback base: Open the `URDF` file and delete all the lines about the Ridgeback (the lines between the Ridgeback and the UR5 are separated by comments). You don't need to do anything else.
    - Removing the Robotiq Two-Finger Gripper however, requires some extra effort. You need to delete the lines about the gripper from the `URDF` file, and you also need to edit the `.SRDF` file and make the following changes:
    ```
-       <group name="manipulator">
-           <chain base_link="base_link" tip_link="ee_link" />
-       </group>
+   <group name="manipulator">
+       <chain base_link="base_link" tip_link="ee_link" />
+   </group>
    ```
 
    And delete the following lines:
    ```
-       <group name="endeffector">
-           <link name="ee_link" />
-       </group>
-       .
-       .
-       <end_effector name="hand" parent_link="ee_link" group="endeffector" parent_group='manipulator' />
+   <group name="endeffector">
+       <link name="ee_link" />
+   </group>
+   .
+   .
+   <end_effector name="hand" parent_link="ee_link" group="endeffector" parent_group='manipulator' />
    ```
    
 ## Contributors
