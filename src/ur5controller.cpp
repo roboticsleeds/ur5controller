@@ -135,18 +135,45 @@ class Ur5Controller : public ControllerBase
             return true;
         }
 
+	TrajectoryBasePtr SimplifyTrajectory(TrajectoryBaseConstPtr ptraj)
+	{
+        TrajectoryBasePtr traj = RaveCreateTrajectory(_penv, ptraj->GetXMLId());
+        traj->Init(_probot->GetConfigurationSpecification());
+        traj->Clone(ptraj, Clone_Bodies);
+
+	      std::vector<ConfigurationSpecification::Group>::const_iterator it = ptraj->GetConfigurationSpecification().FindCompatibleGroup("iswaypoint",true);
+	      if (it == ptraj->GetConfigurationSpecification()._vgroups.end() )
+	      {
+		      return traj;
+	      }
+	      for(int i=ptraj->GetNumWaypoints()-1; i >= 0; i--) {
+		      std::vector <dReal> values(1);
+		      ptraj->GetWaypoint(i,values,*it);
+		      if(values[0] == 0)
+		      {
+			      traj->Remove(i,i+1);
+		      }
+	      }
+	      return traj;
+	}
+
         virtual bool SetPath(TrajectoryBaseConstPtr ptraj)
         {
             if (ptraj != NULL)
             {
 
-              // traj->GetConfigurationSpecification().GetGroupFromName("iswaypoint")
+              TrajectoryBasePtr traj = SimplifyTrajectory(ptraj);
 
-              TrajectoryBasePtr traj = RaveCreateTrajectory(_penv, ptraj->GetXMLId());
-              traj->Init(_probot->GetConfigurationSpecification());
-              traj->Clone(ptraj, Clone_Bodies);
+    	      // std::ostringstream oss;
+    	      // traj->serialize(oss);
+    		    // ROS_ERROR("SimplifiedTraj: %s",oss.str().c_str());
 
-              PlannerStatus status = planningutils::RetimeTrajectory(traj, false, 1.0, 1.0, "ParabolicTrajectoryRetimer");
+
+              //TrajectoryBasePtr traj = RaveCreateTrajectory(_penv, ptraj->GetXMLId());
+              //traj->Init(_probot->GetConfigurationSpecification());
+              //traj->Clone(ptraj, Clone_Bodies);
+
+              PlannerStatus status = planningutils::RetimeTrajectory(traj, false, 1.0, 1.0, "LinearTrajectoryRetimer");
               if (status != PS_HasSolution)
               {
                 ROS_ERROR("Not executing trajectory because retimer failed.");
@@ -219,7 +246,8 @@ class Ur5Controller : public ControllerBase
 
         virtual bool IsDone()
         {
-            return _ac->waitForResult(ros::Duration(0.05));
+          return _ac->waitForResult(ros::Duration(0.05));
+          //return true;
         }
 
         virtual OpenRAVE::dReal GetTime() const
