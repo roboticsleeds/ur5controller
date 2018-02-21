@@ -16,172 +16,146 @@
 # Author: Rafael Papallas (http://papallas.me)
 
 from openravepy import *
-import time
 from numpy import *
 import IPython
 
-def create_ur5(env, urdf_path=None, srdf_path=None):
-    if urdf_path is None:
+
+class Ur5Robot:
+    def __init__(self):
+        self.OFFSET = 0.07
+        self.env = Environment()
+        self.env.Load('environment.xml')
+        self.env.SetViewer('qtcoin')
+
+        self._load_robot_from_urdf()
+        self._attach_controllers_to_robot()
+
+        self.manipulator = self.robot.SetActiveManipulator(self.robot.GetManipulators()[0])
+        self.task_manipulation = interfaces.TaskManipulation(self.robot)
+        self.base_manipulation = interfaces.BaseManipulation(self.robot)
+
+        ikmodel = databases.inversekinematics.InverseKinematicsModel(self.robot, iktype=IkParameterization.Type.Transform6D)
+        if not ikmodel.load():
+            ikmodel.autogenerate()
+
+        self.robot.SetTransform(array([[ 9.99945700e-01, -1.04210156e-02, -1.24229304e-09, 3.03276211e-01],
+                                       [ 1.04210156e-02,  9.99945700e-01, -6.45894224e-12, -1.31079838e-01],
+                                       [ 1.24229289e-09, -6.48736357e-12,  1.00000000e+00, 2.52894759e-02],
+                                       [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00, 1.00000000e+00]]))
+
+        # Add the robot to the environment
+        self.env.Add(self.robot, True)
+
+    def _load_robot_from_urdf(self):
         urdf_path = "package://ur5controller/ur5_description/ur5.urdf"
-    if srdf_path is None:
         srdf_path = "package://ur5controller/ur5_description/ur5.srdf"
 
-    module = RaveCreateModule(env, 'urdf')
-    with env:
-        name = module.SendCommand('LoadURI {} {}'.format(urdf_path, srdf_path))
-        robot = env.GetRobot(name)
+        module = RaveCreateModule(self.env, 'urdf')
 
-    multicontroller = RaveCreateMultiController(env, "")
-    robot.SetController(multicontroller)
+        with self.env:
+            name = module.SendCommand('LoadURI {} {}'.format(urdf_path, srdf_path))
+            self.robot = self.env.GetRobot(name)
 
-    robot_controller = RaveCreateController(env,'ur5controller')
-    hand_controller = RaveCreateController(env, 'robotiqcontroller')
+    def _attach_controllers_to_robot(self):
+        self.multicontroller = RaveCreateMultiController(self.env, "")
+        self.robot.SetController(self.multicontroller)
 
-    multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
-    multicontroller.AttachController(hand_controller, [3], 0)
+        robot_controller = RaveCreateController(self.env,'ur5controller')
+        hand_controller = RaveCreateController(self.env, 'robotiqcontroller')
 
-    # Needed for find a grasp function (not parsed using or_urdf hence needs manual setting)
-    robot.GetManipulators()[0].SetChuckingDirection([1.0])
-    robot.GetManipulators()[0].SetLocalToolDirection([1.0, 0, 0])
+        self.multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
+        self.multicontroller.AttachController(hand_controller, [3], 0)
 
-    manip = robot.SetActiveManipulator(robot.GetManipulators()[0])
-    ikmodel = databases.inversekinematics.InverseKinematicsModel(robot, iktype=IkParameterization.Type.Transform6D)
-    if not ikmodel.load():
-        ikmodel.autogenerate()
+    def get_current_hand_transform(self):
+        return self.robot.GetManipulators()[0].GetTransform()
 
-    # Required for or_rviz to work with the robot's interactive marker.
-    ik_solver = RaveCreateIkSolver(env, ikmodel.getikname())
-    manip.SetIkSolver(ik_solver)
+    def is_trajectory_safe(self, trajectory_object):
+        waypoints = trajectory_object.GetAllWaypoints2D()
+        waypoint_sums = [0, 0, 0, 0, 0, 0]
+        for i in range(0, len(waypoints) - 1):
+            for j in range(0, 6):
+                difference = abs(waypoints[i][j] - waypoints[i+1][j])
+                waypoint_sums[j] += difference
 
-    # Add the robot to the environment
-    env.Add(robot, True)
-    return robot
+        waypoint_below_threshold = [x < numpy.pi/3 for x in waypoint_sums]
 
-def safety_check(trajectory_object):
-    waypoints = trajectory_object.GetAllWaypoints2D()
-    waypoint_sums = [0, 0, 0, 0, 0, 0]
-    for i in range(0, len(waypoints) - 1):
-        for j in range(0, 6):
-            difference = abs(waypoints[i][j] - waypoints[i+1][j])
-            waypoint_sums[j] += difference
+        if all(waypoint_below_threshold):
+            return True
 
-    waypoint_below_threshold = [x < numpy.pi/3 for x in waypoint_sums]
+        return False
 
-    if all(waypoint_below_threshold):
-        return True
+    def execute_trajectory_object(self, trajectory_object):
+        try:
+            self.robot.GetController().SetPath(trajectory_object)
+            self.robot.WaitForController(0)
+        except planning_error, e:
+            print "ERROR: There was an error when executing the trajectory."
+            print e
 
-    return False
+    def rotate_hand(self, rotation_matrix):
+        current_hand_transform = self.get_current_hand_transform()
+        goal_transform = numpy.dot(current_hand_transform, rotation_matrix)
+        ik_solution = self.manipulator.FindIKSolution(goal_transform, IkFilterOptions.CheckEnvCollisions)
 
-def rotate_hand(rotation_matrix):
-    current_hand_transform = robot.GetManipulators()[0].GetTransform()
-    goal_transform = numpy.dot(current_hand_transform, rotation_matrix)
-    ik_solution = manip.FindIKSolution(goal_transform, IkFilterOptions.CheckEnvCollisions) # get collision-free solution
+        trajectory_object = self.base_manipulation.MoveManipulator(goal=ik_solution, execute=False, outputtrajobj=True)
 
-    try:
-        trajectory_object = manipprob.MoveManipulator(goal=ik_solution, execute=False, outputtrajobj=True)
-        if safety_check(trajectory_object):
-            robot.GetController().SetPath(trajectory_object)
-            robot.WaitForController(0)
+        if self.is_trajectory_safe(trajectory_object):
+            self.execute_trajectory_object(trajectory_object)
         else:
             print "This trajectory failed the safety check."
-    except planning_error, e:
-        print e
+
+    def move_hand(self, x_offset, y_offset):
+        current_hand_transform = self.get_current_hand_transform()
+        current_hand_transform[0, 3] += x_offset
+        current_hand_transform[1, 3] += y_offset
+
+        ik_solution = self.manipulator.FindIKSolution(current_hand_transform, IkFilterOptions.CheckEnvCollisions)
+
+        trajectory_object = self.base_manipulation.MoveManipulator(goal=ik_solution, execute=False, outputtrajobj=True)
+
+        if self.is_trajectory_safe(trajectory_object):
+            self.execute_trajectory_object(trajectory_object)
+        else:
+            print "The trajectory failed the safety check."
+
+    def keyboard_control(self):
+        print ""
+        print " q     w    e "
+        print ""
+        print " a     +    d "
+        print ""
+        print "       s      "
+        print ""
+        print "'exit' to stop the demo."
+
+        while True:
+            action = raw_input("Menu Action: ")
+            if action == "exit": # EXIT Demo
+                break
+            if action == "q": # Rotate Anti-clockwise
+                rotation_matrix = matrixFromAxisAngle([0, 0, -numpy.pi/6])
+                self.rotate_hand(rotation_matrix)
+            elif action == "e": # Rotate Clockwise
+                rotation_matrix = matrixFromAxisAngle([0, 0, numpy.pi/6])
+                self.rotate_hand(rotation_matrix)
+            elif action == "o": # Open Gripper
+                pass
+            elif action == "c": # Close Gripper
+                task_manipulation.CloseFingers()
+            elif action in ["w", "s", "a", "d"]:
+                x_offset = 0
+                y_offset = 0
+
+                if action == "w": x_offset = self.OFFSET  # Move Forward
+                if action == "s": x_offset = -self.OFFSET # Move Backwards
+                if action == "a": y_offset = -self.OFFSET # Move Left
+                if action == "d": y_offset = self.OFFSET  # Move Right
+
+                self.move_hand(x_offset, y_offset)
+
 
 if __name__ == "__main__":
-    env = Environment()
-    env.Load('test_env.xml')
-    env.SetViewer('qtcoin')
-
-    # At this point, the robot should load in the viewer and replicate the
-    # current configuration of the physical robot.
-    robot = create_ur5(env)
-
-    robot.SetTransform(array([[ 9.99945700e-01, -1.04210156e-02, -1.24229304e-09, 3.03276211e-01],
-                              [ 1.04210156e-02,  9.99945700e-01, -6.45894224e-12, -1.31079838e-01],
-                              [ 1.24229289e-09, -6.48736357e-12,  1.00000000e+00, 2.52894759e-02],
-                              [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00, 1.00000000e+00]]))
-
-    # robot.SetDOFValues(array([ 1.53822374, 0, 0, 0, 0, 0, -0.81608755, 1.58696198, 0, -0.73290283, 1.61193109, 0.0235535]))
-
-    print "===================================================================="
-    print "                         UR5 CONTROLLER DEMO"
-    print "===================================================================="
-    print ""
-    print "Controlling UR5 Robot in 2D over a table."
-    print ""
-    print "=========="
-    print "   MENU"
-    print "=========="
-    print ""
-    print " q     w    e "
-    print ""
-    print " a     +    d "
-    print ""
-    print "       s      "
-    print ""
-    print "w -> moves the arm forward."
-    print "s -> moves the arm backwards."
-    print "a -> moves the arm left."
-    print "d -> moves the arm right."
-    print "q -> rotate end-effector anti-clockwise."
-    print "e -> rotate end-effector clockwise."
-    print "o -> Opens the end-effector."
-    print "c -> Closes the end-effector."
-    print ""
-    print "'exit' to stop the demo."
-
-    manipprob = interfaces.BaseManipulation(robot) # create the interface for basic manipulation programs
-    task_manipulation = interfaces.TaskManipulation(robot)
-    manip = robot.SetActiveManipulator(robot.GetManipulators()[0])
-    OFFSET = 0.07
-
-    while True:
-        action = raw_input("Menu Action: ")
-        if action == "exit":  # EXIT Demo
-            break
-        if action == "q":     # Rotate Anti-clockwise
-            rotation_matrix = matrixFromAxisAngle([0, 0, -numpy.pi/6])
-            rotate_hand(rotation_matrix)
-        elif action == "e":   # Rotate Clockwise
-            rotation_matrix = matrixFromAxisAngle([0, 0, numpy.pi/6])
-            rotate_hand(rotation_matrix)
-        elif action == "o":   # Open Gripper
-            pass
-        elif action == "c":   # Close Gripper
-            task_manipulation.CloseFingers()
-        elif action in ["w", "s", "a", "d"]:
-            start_transform = robot.GetManipulators()[0].GetEndEffectorTransform()
-
-            if action == "w":   # Forward
-                x_offset = OFFSET
-                y_offset = 0
-            elif action == "s": # Backwards
-                x_offset = -OFFSET
-                y_offset = 0
-            elif action == "a": # Left
-                x_offset = 0
-                y_offset = -OFFSET
-            elif action == "d": # Right
-                x_offset = 0
-                y_offset = OFFSET
-
-            current_hand_transform = robot.GetManipulators()[0].GetTransform()
-            x = numpy.identity(4)
-
-            x[0, 3] += x_offset
-            x[1, 3] += y_offset
-
-            goal_transform = numpy.dot(current_hand_transform, x)
-            ik_solution = manip.FindIKSolution(goal_transform, IkFilterOptions.CheckEnvCollisions) # get collision-free solution
-
-            try:
-                trajectory_object = manipprob.MoveManipulator(goal=ik_solution, execute=False, outputtrajobj=True)
-                if safety_check(trajectory_object):
-                    robot.GetController().SetPath(trajectory_object)
-                    robot.WaitForController(0)
-                else:
-                    print "This trajectory failed the safety check."
-            except planning_error, e:
-                print e
+    robot = Ur5Robot()
+    robot.keyboard_control()
 
     IPython.embed()
