@@ -54,7 +54,7 @@ with env:
 
 env.Add(robot, True)
 ```
-2. You know need to attach the controllers (UR5 and the Robotiq controllers) to the robot using the `MultiController`:
+2. You now need to attach the controllers (UR5 and the Robotiq controllers) to the robot using the `MultiController`:
 ```python
 multicontroller = RaveCreateMultiController(env, "")
 robot.SetController(multicontroller)
