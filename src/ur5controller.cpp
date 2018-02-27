@@ -130,29 +130,29 @@ class Ur5Controller : public ControllerBase
             return true;
         }
 
-	TrajectoryBasePtr SimplifyTrajectory(TrajectoryBaseConstPtr ptraj)
-	{
-            TrajectoryBasePtr traj = RaveCreateTrajectory(_penv, ptraj->GetXMLId());
-            traj->Init(_probot->GetConfigurationSpecification());
-            traj->Clone(ptraj, Clone_Bodies);
+        TrajectoryBasePtr SimplifyTrajectory(TrajectoryBaseConstPtr ptraj)
+        {
+                TrajectoryBasePtr traj = RaveCreateTrajectory(_penv, ptraj->GetXMLId());
+                traj->Init(_probot->GetConfigurationSpecification());
+                traj->Clone(ptraj, Clone_Bodies);
 
-            std::vector<ConfigurationSpecification::Group>::const_iterator it = ptraj->GetConfigurationSpecification().FindCompatibleGroup("iswaypoint",true);
-            if (it == ptraj->GetConfigurationSpecification()._vgroups.end())
-            {
-                return traj;
-            }
-            
-            for(int i=ptraj->GetNumWaypoints()-1; i >= 0; i--) 
-            {
-                std::vector <dReal> values(1);
-                ptraj->GetWaypoint(i,values,*it);
-                if(values[0] == 0)
+                std::vector<ConfigurationSpecification::Group>::const_iterator it = ptraj->GetConfigurationSpecification().FindCompatibleGroup("iswaypoint",true);
+                if (it == ptraj->GetConfigurationSpecification()._vgroups.end())
                 {
-                    traj->Remove(i,i+1);
+                    return traj;
                 }
-            }
-            return traj;
-	}
+                
+                for(int i=ptraj->GetNumWaypoints()-1; i >= 0; i--) 
+                {
+                    std::vector <dReal> values(1);
+                    ptraj->GetWaypoint(i,values,*it);
+                    if(values[0] == 0)
+                    {
+                        traj->Remove(i,i+1);
+                    }
+                }
+                return traj;
+        }
 
         virtual bool SetPath(TrajectoryBaseConstPtr ptraj)
         {
