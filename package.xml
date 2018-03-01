@@ -8,8 +8,8 @@
   <url type="website">https://github.com/papallas/ur5controller</url>
   <url type="repository">https://github.com/papallas/ur5controller.git</url>
   <url type="bugtracker">https://github.com/papallas/ur5controller/issues</url>
-  <maintainer email="sc13rp@leeds.ac.uk">Rafael Papallas</maintainer>
-  <author email="sc13rp@leeds.ac.uk">Rafael Papallas</author>
+  <maintainer email="r.papallas@leeds.ac.uk">Rafael Papallas</maintainer>
+  <author email="r.papallas@leeds.ac.uk">Rafael Papallas</author>
   <author email="m.r.dogar@leeds.ac.uk">Dr. Mehmet Dogar</author>
   <license>GPLv3</license>
   <buildtool_depend>catkin</buildtool_depend>
