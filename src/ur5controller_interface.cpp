@@ -1,4 +1,4 @@
-//  Copyright (C) 2017 Rafael Papallas
+//  Copyright (C) 2017 The University of Leeds
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -12,54 +12,62 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//  Author: Rafael Papallas (www.papallas.me)
 
 #include "ros/ros.h"
 #include "plugindefs.h"
 #include <openrave/plugin.h>
 
-ControllerBasePtr CreateUr5Controller(EnvironmentBasePtr penv, std::istream &sinput);
-ControllerBasePtr CreateRobotiqController(EnvironmentBasePtr penv, std::istream &sinput);
+ControllerBasePtr CreateUr5Controller(EnvironmentBasePtr penv,
+                                      std::istream &sinput);
 
-InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string &interfaceName, std::istream &sinput,
+ControllerBasePtr CreateRobotiqController(EnvironmentBasePtr penv,
+                                          std::istream &sinput);
+
+InterfaceBasePtr CreateInterfaceValidated(InterfaceType type,
+                                          const std::string &interfaceName,
+                                          std::istream &sinput,
                                           EnvironmentBasePtr penv) {
 
-    switch (type)
-    {
+    switch (type) {
         case PT_Controller:
-            if (interfaceName == "ur5controller")
-            {
-                if (!ros::isInitialized())
-                {
+            if (interfaceName == "ur5controller") {
+                if (!ros::isInitialized()) {
                     int argc = 0;
                     std::string node_name = "ur5controller";
-                    ros::init(argc, NULL, node_name, ros::init_options::AnonymousName);
-                    RAVELOG_INFO("Starting ROS node '%s'.\n", node_name.c_str());
+                    ros::init(argc, NULL, node_name,
+                              ros::init_options::AnonymousName);
+
+                    RAVELOG_INFO("Starting ROS node '%s'.\n",
+                                 node_name.c_str());
                 }
-                else
-                {
-                    RAVELOG_INFO("Using existing ROS node '%s'\n", ros::this_node::getName().c_str());
+                else {
+                    RAVELOG_INFO("Using existing ROS node '%s'\n",
+                                 ros::this_node::getName().c_str());
                 }
 
                 return CreateUr5Controller(penv, sinput);
             }
 
             if (interfaceName == "robotiqcontroller") {
-                if (!ros::isInitialized())
-                {
+                if (!ros::isInitialized()) {
                     int argc = 0;
                     std::string node_name = "robotiqcontroller";
-                    ros::init(argc, NULL, node_name, ros::init_options::AnonymousName);
-                    RAVELOG_INFO("Starting ROS node '%s'.\n", node_name.c_str());
+                    ros::init(argc, NULL, node_name,
+                              ros::init_options::AnonymousName);
+
+                    RAVELOG_INFO("Starting ROS node '%s'.\n",
+                                 node_name.c_str());
                 }
-                else
-                {
-                    RAVELOG_INFO("Using existing ROS node '%s'\n", ros::this_node::getName().c_str());
+                else {
+                    RAVELOG_INFO("Using existing ROS node '%s'\n",
+                                 ros::this_node::getName().c_str());
                 }
 
                 return CreateRobotiqController(penv, sinput);
             }
             break;
-
         default:
             break;
     }
@@ -67,8 +75,7 @@ InterfaceBasePtr CreateInterfaceValidated(InterfaceType type, const std::string 
     return InterfaceBasePtr();
 }
 
-void GetPluginAttributesValidated(PLUGININFO &info)
-{
+void GetPluginAttributesValidated(PLUGININFO &info) {
     info.interfacenames[PT_Controller].push_back("Ur5Controller");
     info.interfacenames[PT_Controller].push_back("RobotiqController");
 }
