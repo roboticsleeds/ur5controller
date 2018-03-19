@@ -34,11 +34,9 @@ using namespace OpenRAVE;
 
 typedef actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> TrajClient;
 
-class Ur5Controller : public ControllerBase
-{
+class Ur5Controller : public ControllerBase {
     public:
-        Ur5Controller(EnvironmentBasePtr penv, std::istream &sinput) : ControllerBase(penv)
-        {
+        Ur5Controller(EnvironmentBasePtr penv, std::istream &sinput) : ControllerBase(penv) {
             __description = ":Interface Authors: Rafael Papallas & Mehmet Dogar, The University of Leeds";
 
             _nControlTransformation = 0;
@@ -54,17 +52,14 @@ class Ur5Controller : public ControllerBase
 
             @param msg the message sent by the subscriber (i.e the new joint values)
         */
-        void JointStateCallback(const sensor_msgs::JointState::ConstPtr &msg)
-        {
-            if (_paused)
-            {
+        void JointStateCallback(const sensor_msgs::JointState::ConstPtr &msg) {
+            if (_paused) {
                 return;
             }
 
             // Create a joint vector for angles and assign the new values from message.
             std::vector<double> joint_angles(6);
-            for (unsigned int i = 0; i < (msg->position).size(); i++)
-            {
+            for (unsigned int i = 0; i < (msg->position).size(); i++) {
                 joint_angles[i] = (msg->position).at(i);
             }
 
@@ -84,12 +79,10 @@ class Ur5Controller : public ControllerBase
             also crient an action client to send trajectories to the action
             server.
         */
-        virtual bool Init(RobotBasePtr robot, const std::vector<int> &dofindices, int nControlTransformation)
-        {
+        virtual bool Init(RobotBasePtr robot, const std::vector<int> &dofindices, int nControlTransformation) {
             _probot = robot;
 
-            if (!!_probot)
-            {
+            if (!!_probot) {
                 _dofindices = dofindices;
                 _nControlTransformation = nControlTransformation;
             }
@@ -116,58 +109,47 @@ class Ur5Controller : public ControllerBase
             return true;
         }
 
-        virtual void Reset(int options)
-        {
+        virtual void Reset(int options) {
         }
 
-        virtual const std::vector<int> &GetControlDOFIndices() const
-        {
+        virtual const std::vector<int> &GetControlDOFIndices() const {
             return _dofindices;
         }
 
-        virtual int IsControlTransformation() const
-        {
+        virtual int IsControlTransformation() const {
             return _nControlTransformation;
         }
 
-        virtual bool SetDesired(const std::vector <OpenRAVE::dReal> &values, TransformConstPtr trans)
-        {
+        virtual bool SetDesired(const std::vector <OpenRAVE::dReal> &values, TransformConstPtr trans) {
             return true;
         }
 
-        TrajectoryBasePtr SimplifyTrajectory(TrajectoryBaseConstPtr ptraj)
-        {
+        TrajectoryBasePtr SimplifyTrajectory(TrajectoryBaseConstPtr ptraj) {
             TrajectoryBasePtr traj = RaveCreateTrajectory(_penv, ptraj->GetXMLId());
             traj->Init(_probot->GetConfigurationSpecification());
             traj->Clone(ptraj, Clone_Bodies);
 
             std::vector<ConfigurationSpecification::Group>::const_iterator it = ptraj->GetConfigurationSpecification().FindCompatibleGroup("iswaypoint",true);
-            if (it == ptraj->GetConfigurationSpecification()._vgroups.end())
-            {
+            if (it == ptraj->GetConfigurationSpecification()._vgroups.end()) {
                 return traj;
             }
             
-            for(int i=ptraj->GetNumWaypoints()-1; i >= 0; i--) 
-            {
+            for(int i=ptraj->GetNumWaypoints()-1; i >= 0; i--) {
                 std::vector <dReal> values(1);
                 ptraj->GetWaypoint(i,values,*it);
-                if(values[0] == 0)
-                {
+                if(values[0] == 0) {
                     traj->Remove(i,i+1);
                 }
             }
             return traj;
         }
 
-        virtual bool SetPath(TrajectoryBaseConstPtr ptraj)
-        {
-            if (ptraj != NULL)
-            {
+        virtual bool SetPath(TrajectoryBaseConstPtr ptraj) {
+            if (ptraj != NULL) {
                 TrajectoryBasePtr traj = SimplifyTrajectory(ptraj);
 
                 PlannerStatus status = planningutils::RetimeTrajectory(traj, false, 1.0, 1.0, "LinearTrajectoryRetimer");
-                if (status != PS_HasSolution)
-                {
+                if (status != PS_HasSolution) {
                     ROS_ERROR("Not executing trajectory because retimer failed.");
                     return false;
                 }
@@ -181,8 +163,7 @@ class Ur5Controller : public ControllerBase
             return true;
         }
 
-        trajectory_msgs::JointTrajectory FromOpenRaveToRosTrajectory(TrajectoryBasePtr traj) 
-        {
+        trajectory_msgs::JointTrajectory FromOpenRaveToRosTrajectory(TrajectoryBasePtr traj) {
             trajectory_msgs::JointTrajectory trajectory;
             trajectory.header.stamp = ros::Time::now();
             trajectory.header.frame_id = "base_link";
@@ -195,8 +176,7 @@ class Ur5Controller : public ControllerBase
             trajectory.joint_names[4] = "wrist_2_joint";
             trajectory.joint_names[5] = "wrist_3_joint";
 
-            for(int i=0; i < traj->GetNumWaypoints(); i++) 
-            {
+            for(int i=0; i < traj->GetNumWaypoints(); i++) {
                 trajectory_msgs::JointTrajectoryPoint ros_waypoint;
                 vector <dReal> or_waypoint;
                 traj->GetWaypoint(i, or_waypoint);
@@ -213,8 +193,7 @@ class Ur5Controller : public ControllerBase
                 trajectory.points[i].positions.resize(6);
                 trajectory.points[i].velocities.resize(6);
 
-                for (int j = 0; j < 6; j++)
-                {
+                for (int j = 0; j < 6; j++) {
                   trajectory.points[i].positions[j] = values[j];
                   trajectory.points[i].velocities[j] = 0.0;
                 }
@@ -228,28 +207,23 @@ class Ur5Controller : public ControllerBase
             return trajectory;
         }
         
-        virtual void SimulationStep(dReal fTimeElapsed)
-        {
-            if (!_initialized)
-            {
+        virtual void SimulationStep(dReal fTimeElapsed) {
+            if (!_initialized) {
                 return;
             }
 
             ros::spinOnce();
         }
 
-        virtual bool IsDone()
-        {
+        virtual bool IsDone() {
           return _ac->waitForResult(ros::Duration(0.05));
         }
 
-        virtual OpenRAVE::dReal GetTime() const
-        {
+        virtual OpenRAVE::dReal GetTime() const {
             return 0;
         }
 
-        virtual RobotBasePtr GetRobot() const
-        {
+        virtual RobotBasePtr GetRobot() const {
             return _probot;
         }
 
@@ -270,7 +244,6 @@ class Ur5Controller : public ControllerBase
         EnvironmentBasePtr _penv;
 };
 
-ControllerBasePtr CreateUr5Controller(EnvironmentBasePtr penv, std::istream &sinput)
-{
+ControllerBasePtr CreateUr5Controller(EnvironmentBasePtr penv, std::istream &sinput) {
     return ControllerBasePtr(new Ur5Controller(penv, sinput));
 }
