@@ -442,7 +442,6 @@
     <collision>
       <geometry>
         <cylinder length="0.459" radius="0.1"/>
-        <!--mesh filename="package://ur5controller/ur5_description/ridgeback/arm_stand.stl"/-->
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0.2295"/>
     </collision>
@@ -679,21 +678,6 @@
   </link>
 
 
-  <joint name="ee_fixed_joint" type="fixed">
-    <parent link="wrist_3_link"/>
-    <child link="ee_link"/>
-    <origin rpy="0.0 0.0 1.570796325" xyz="0.0 0.1623 0.0"/>
-  </joint>
-
-
-  <link name="ee_link">
-    <collision>
-      <geometry>
-        <box size="0.01 0.01 0.01"/>
-      </geometry>
-      <origin rpy="0 0 0" xyz="-0.01 0 0"/>
-    </collision>
-  </link>
 
 
   <transmission name="shoulder_pan_trans">
@@ -781,6 +765,109 @@
     <parent link="wrist_3_link"/>
     <child link="tool0"/>
   </joint>
+
+
+
+
+
+
+
+        <link name="arm_to_force_torque_sensor_link">
+          <visual>
+            <geometry>
+              <box size="0.088 0.088 0.0125"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <material name="white"/>
+          </visual>
+          <collision>
+            <geometry>
+              <box size="0.088 0.088 0.0125"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+          </collision>
+        </link>
+
+        <joint name="arm_to_force_torque_sensor_joint" type="fixed">
+          <parent link="tool0"/>
+          <child link="arm_to_force_torque_sensor_link"/>
+          <origin rpy="0 0 0" xyz="0.0 0.0 0.00625"/>
+        </joint>
+
+        <!-- mount the fts to the robot -->
+        <joint name="robotiq_fts_fix" type="fixed" >
+            <!--In most cases origin would be flange adapter plate: <origin xyz="0 0 0.009" rpy="0 0 0"/> /-->
+            <!--insert_block name="origin" /-->
+            <parent link="arm_to_force_torque_sensor_link" />
+            <child link="robotiq_fts_robotside" />
+            <origin rpy="0 0 0" xyz="0.0 0.0 0.00625"/>
+        </joint>
+
+        <link name="robotiq_fts_robotside">
+            <inertial>
+                <origin xyz="0 0 0.01875" rpy="0 0 0"/>
+                <mass value="0.65"/>
+                <inertia ixx="0.000661171875" ixy="0" ixz="0" iyy="0.000661171875" iyz="0" izz="0.00117" />
+            </inertial>
+
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 -1.5708" />
+                <geometry>
+                    <mesh filename="package://ur5controller/ur5_description/robotiq_force_torque_sensor/meshes/visual/robotiq_fts150.stl"/>
+                </geometry>
+                <material name="black"/>
+            </visual>
+
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="package://ur5controller/ur5_description/robotiq_force_torque_sensor/meshes/collision/robotiq_fts150.stl"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <!-- virtual measurement frame -->
+        <joint name="robotiq_measurment_joint" type="fixed" >
+            <origin xyz="0 0 0.01625" rpy="0 0 0" />
+            <parent link="robotiq_fts_robotside" />
+            <child link="robotiq_force_torque_frame_id" />
+        </joint>
+
+        <link name="robotiq_force_torque_frame_id"/>
+
+        <!-- toolside frame -->
+        <joint name="robotiq_toolside_joint" type="fixed" >
+            <origin xyz="0 0 0.0375" rpy="0 0 0" />
+            <parent link="robotiq_fts_robotside" />
+            <child link="robotiq_fts_toolside" />
+        </joint>
+        <link name="robotiq_fts_toolside"/>
+
+  <link name="ee_link">
+    <collision>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="-0.01 0 0"/>
+    </collision>
+  </link>
+
+  <joint name="ee_fixed_joint" type="fixed">
+    <parent link="robotiq_fts_toolside"/>
+    <child link="ee_link"/>
+    <origin rpy="0.0 0.0 1.57075" xyz="0.0 0.0 0.08"/>
+  </joint>
+
+
+
+
+
+
+
+
+
+
+
 
 
   <!-- ===================================================================  -->
