@@ -21,14 +21,14 @@ import IPython
 
 
 class Ur5Robot:
-    def __init__(self):
+    def __init__(self, has_two_finger_gripper=True, has_force_torque_sensor=True):
         self.OFFSET = 0.07
         self.env = Environment()
         self.env.Load('environment.xml')
         self.env.SetViewer('qtcoin')
 
-        self._load_robot_from_urdf()
-        self._attach_controllers_to_robot()
+        self._load_robot_from_urdf(has_two_finger_gripper, has_force_torque_sensor)
+        # self._attach_controllers_to_robot()
 
         self.manipulator = self.robot.SetActiveManipulator(self.robot.GetManipulators()[0])
         self.task_manipulation = interfaces.TaskManipulation(self.robot)
@@ -46,9 +46,18 @@ class Ur5Robot:
         # Add the robot to the environment
         self.env.Add(self.robot, True)
 
-    def _load_robot_from_urdf(self):
-        urdf_path = "package://ur5controller/ur5_description/ur5.urdf"
-        srdf_path = "package://ur5controller/ur5_description/ur5.srdf"
+    def _load_robot_from_urdf(self, has_two_finger_gripper, has_force_torque_sensor):
+        if has_two_finger_gripper and has_force_torque_sensor:
+            file = "clearpath_ridgeback__ur5__robotiq_two_finger_gripper__robotiq_fts150"
+        if has_two_finger_gripper and not has_force_torque_sensor:
+            file = "clearpath_ridgeback__ur5__robotiq_two_finger_gripper"
+        if not has_two_finger_gripper and has_force_torque_sensor:
+            file = "clearpath_ridgeback__ur5__robotiq_three_finger_gripper__robotiq_fts150"
+        if not has_two_finger_gripper and not has_force_torque_sensor:
+            file = "clearpath_ridgeback__ur5__robotiq_three_finger_gripper"
+
+        urdf_path = "package://ur5controller/ur5_description/urdf/{}.urdf".format(file)
+        srdf_path = "package://ur5controller/ur5_description/srdf/{}.srdf".format(file)
 
         module = RaveCreateModule(self.env, 'urdf')
 
@@ -155,7 +164,9 @@ class Ur5Robot:
 
 
 if __name__ == "__main__":
-    robot = Ur5Robot()
+    robot = Ur5Robot(has_two_finger_gripper=True,
+                     has_force_torque_sensor=True)
+
     robot.keyboard_control()
 
     IPython.embed()
