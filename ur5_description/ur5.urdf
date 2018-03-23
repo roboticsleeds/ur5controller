@@ -855,7 +855,7 @@
   <joint name="ee_fixed_joint" type="fixed">
     <parent link="robotiq_fts_toolside"/>
     <child link="ee_link"/>
-    <origin rpy="0.0 0.0 1.57075" xyz="0.0 0.0 0.08"/>
+    <origin rpy="1.570796325 -1.570796325 0.0" xyz="0.0 0.0 0.08"/>
   </joint>
 
 
