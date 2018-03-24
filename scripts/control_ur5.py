@@ -20,6 +20,7 @@ import numpy
 import IPython
 from openravepy import IkFilterOptions
 from openravepy import matrixFromAxisAngle
+from openravepy import PlanningError
 from ur5_factory import UR5_Factory
 
 class Demo:
@@ -55,7 +56,7 @@ class Demo:
                 waypoint_sums[j] += difference
 
         waypoint_below_threshold = [x < numpy.pi/3 for x in waypoint_sums]
-        return all(waypoint_below_threshold):
+        return all(waypoint_below_threshold)
 
     def execute_trajectory_object(self, trajectory_object):
         try:
@@ -70,12 +71,16 @@ class Demo:
         goal_transform = numpy.dot(current_hand_transform, rotation_matrix)
         ik_solution = self.robot.manipulator.FindIKSolution(goal_transform, IkFilterOptions.CheckEnvCollisions)
 
-        trajectory_object = self.robot.base_manipulation.MoveManipulator(goal=ik_solution, execute=False, outputtrajobj=True)
-
-        if self.is_trajectory_safe(trajectory_object) and trajectory_object:
-            self.execute_trajectory_object(trajectory_object)
-        else:
-            print "This trajectory failed the safety check."
+        try:
+            trajectory_object = self.robot.base_manipulation.MoveManipulator(goal=ik_solution, execute=False, outputtrajobj=True)
+            
+            if self.is_trajectory_safe(trajectory_object) and trajectory_object:
+                self.execute_trajectory_object(trajectory_object)
+            else:
+                print "The trajectory failed the safety check."
+	except PlanningError, e:
+            print "There was a planning error"
+            print e
 
     def move_hand(self, x_offset, y_offset):
         current_hand_transform = self.robot.end_effector_transform
@@ -83,12 +88,17 @@ class Demo:
         current_hand_transform[1, 3] += y_offset
 
         ik_solution = self.robot.manipulator.FindIKSolution(current_hand_transform, IkFilterOptions.CheckEnvCollisions)
-        trajectory_object = self.robot.base_manipulation.MoveManipulator(goal=ik_solution, execute=False, outputtrajobj=True)
 
-        if self.is_trajectory_safe(trajectory_object) and trajectory_object:
-            self.execute_trajectory_object(trajectory_object)
-        else:
-            print "The trajectory failed the safety check."
+        try:
+            trajectory_object = self.robot.base_manipulation.MoveManipulator(goal=ik_solution, execute=False, outputtrajobj=True)
+            
+            if self.is_trajectory_safe(trajectory_object) and trajectory_object:
+                self.execute_trajectory_object(trajectory_object)
+            else:
+                print "The trajectory failed the safety check."
+	except PlanningError, e:
+            print "There was a planning error"
+            print e
 
     def control_robot_with_the_keyboard(self):
         OFFSET = 0.07
