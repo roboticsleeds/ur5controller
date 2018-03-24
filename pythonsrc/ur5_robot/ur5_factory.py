@@ -31,7 +31,7 @@ class UR5_Factory:
             raise Exception("Robot configuration without ridgeback is not yet available. Robot configuration without the Clearpath Ridgeback is under development at the moment (please check that you also have the latest version of this code).")
 
         RaveInitialize(True)
-        env = self._create_environment()
+        env = self._create_environment(env_path)
         robot = self._load_ur5_from_urdf(env, gripper_name, has_ridgeback, has_force_torque_sensor, urdf_path, srdf_path)
 
         # Add class UR5_Robot to the robot.
@@ -46,7 +46,7 @@ class UR5_Factory:
 
         return env, robot
 
-    def _get_file_name_from_specification(gripper_name, has_ridgeback, has_force_torque_sensor):
+    def _get_file_name_from_specification(self, gripper_name, has_ridgeback, has_force_torque_sensor):
         file_name = None
 
         if gripper_name == "robotiq_two_finger" and has_ridgeback and has_force_torque_sensor:
@@ -80,7 +80,7 @@ class UR5_Factory:
 
         return robot
 
-    def _create_environment(self):
+    def _create_environment(self, env_path):
         env = Environment()
 
         if env_path is not None:
