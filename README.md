@@ -33,9 +33,29 @@ how to install this plugin if you struggle to find a solution, find the tutorial
 - Add the following line in your `~/.bashrc` file located under your home directory by running the following command in the terminal: `echo 'export OPENRAVE_PLUGINS=$OPENRAVE_PLUGINS:~/catkin_ws/devel/share/openrave-0.9/plugins' >> ~/.bashrc`
 - Run `source ~/.bashrc`.
 - Go to your catkin workspace `cd ~/catkin_ws` and run `catkin_make`. You should see a successful message on build in which case you are ready to go. If you get any errors at this stage, please review what went wrong.
+- Add in your `.bashrc` the Python path to the UR5 class by running `echo 'export PYTHONPATH=$PYTHONPATH:~/catkin_ws/src/ur5controller/pythonsrc/ur5_robot' >> ~/.bashrc`. This will let Python know where the Python classes for creating UR5 robot instances in OpenRAVE are.
 
 ## Testing the controller
 There is a file called `control_ur5.py` under `scripts` that you can run and test the controller on the real robot.
+
+With the Python class in place, creating a UR5 robot in OpenRAVE is super easy:
+
+```python
+from ur5_factory import UR5_Factory
+ur5_factory = UR5_Factory()
+
+# If you want to specify all the configuration settings (is_simulation, has_ridgeback etc)
+env, robot = ur5_factory.initialize_ur5_with_configuration(is_simulation=True,
+                                                           has_ridgeback=True,
+                                                           gripper_name="robotiq_two_finger",
+                                                           has_force_torque_sensor=True,
+                                                           env_path="test_env.xml",
+                                                           viewer_name="qtcoin",
+                                                           urdf_path="package://ur5controller/ur5_description/urdf/",
+                                                           srdf_path="package://ur5controller/ur5_description/srdf/")
+# The above is equivalent to the following (the initialize_ur5_with_configuration has set to defaults the values used above):
+env, robot = ur5_factory.initialize_ur5_with_configuration()
+```
 
 ## Controller explained
 1. Load the robot in OpenRAVE using the URDF plugin:
