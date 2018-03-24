@@ -34,4 +34,4 @@ class UR5_Robot(Robot):
 
     @property
     def end_effector_transform(self):
-        return self.GetManipulators()[0].GetTransform()
+        return self.manipulator.GetTransform()
