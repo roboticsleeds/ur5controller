@@ -1,3 +1,4 @@
+from openravepy import RaveInitialize
 from ur5_robot import UR5_Robot
 
 class UR5_Factory:
