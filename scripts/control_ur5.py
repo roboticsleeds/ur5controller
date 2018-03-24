@@ -18,7 +18,7 @@
 
 from numpy import *
 import IPython
-from ur5_robot import UR5_Factory
+from ur5_factory import UR5_Factory
 
 class Demo:
     def __init__(self):
