@@ -16,8 +16,10 @@
 # Author: Rafael Papallas (http://papallas.me)
 
 
-from numpy import *
+import numpy
 import IPython
+from openravepy import IkFilterOptions
+from openravepy import matrixFromAxisAngle
 from ur5_factory import UR5_Factory
 
 class Demo:
