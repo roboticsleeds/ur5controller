@@ -23,7 +23,7 @@ from openravepy import databases
 from openravepy import IkParameterization
 
 
-class UR5_Robot(object, Robot):
+class UR5_Robot(Robot):
     def __init__(self, is_simulation):
         self.robot_name = "UR5"
 
