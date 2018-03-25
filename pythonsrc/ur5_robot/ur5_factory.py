@@ -62,7 +62,6 @@ class UR5_Factory(object):
         """
         # TODO: Add support for robotiq_three_finger
         self._available_grippers = ["robotiq_two_finger"]
-        self._available_viewers = ["qtcoin", "rviz"]
 
     def create_ur5_and_env(self, is_simulation=True,
                            has_ridgeback=True,
@@ -103,14 +102,10 @@ class UR5_Factory(object):
             An openravepy.Environment and openravepy.Robot instances.
 
         Raises:
-            ValueError: If gripper_name is invalid, or viewer_name is
-                        invalid.
+            ValueError: If gripper_name is invalid invalid.
         """
         if gripper_name not in self._available_grippers:
             raise ValueError("Gripper {} is not supported. The only available gripper names are: {}".format(gripper_name, ', '.join(self._available_grippers)))
-
-        if viewer_name not in self._available_viewers:
-            raise ValueError("Viewer {} is not supported. The only available viewer names are: {}".format(viewer_name, ', '.join(self._available_viewers)))
 
         # TODO: Create URDFs that do not include the ridgeback.
         if not has_ridgeback:
