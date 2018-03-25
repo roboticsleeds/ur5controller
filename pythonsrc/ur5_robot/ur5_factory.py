@@ -151,18 +151,14 @@ class UR5_Factory(object):
             A file name to a URDF/SRDF file matching the configuration
             specified by the arguments.
         """
-        file_name = None
-
         if gripper_name == "robotiq_two_finger" and has_ridgeback and has_force_torque_sensor:
-            file_name = "clearpath_ridgeback__ur5__robotiq_two_finger_gripper__robotiq_fts150"
+            return "clearpath_ridgeback__ur5__robotiq_two_finger_gripper__robotiq_fts150"
         if gripper_name == "robotiq_two_finger" and has_ridgeback and not has_force_torque_sensor:
-            file_name = "clearpath_ridgeback__ur5__robotiq_two_finger_gripper"
+            return "clearpath_ridgeback__ur5__robotiq_two_finger_gripper"
         if gripper_name == "robotiq_three_finger" and has_ridgeback and has_force_torque_sensor:
-            file_name = "clearpath_ridgeback__ur5__robotiq_three_finger_gripper__robotiq_fts150"
+            return "clearpath_ridgeback__ur5__robotiq_three_finger_gripper__robotiq_fts150"
         if gripper_name == "robotiq_three_finger" and has_ridgeback and not has_force_torque_sensor:
-            file_name = "clearpath_ridgeback__ur5__robotiq_three_finger_gripper"
-
-        return file_name
+            return "clearpath_ridgeback__ur5__robotiq_three_finger_gripper"
 
     def _load_ur5_from_urdf(self, env, gripper_name, has_ridgeback,
                             has_force_torque_sensor, urdf_path, srdf_path):
