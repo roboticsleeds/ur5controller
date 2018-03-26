@@ -48,7 +48,7 @@ class UR5_Robot(Robot):
 
         self.ikmodel = databases.inversekinematics.InverseKinematicsModel(self, iktype=IkParameterization.Type.Transform6D)
         if not self.ikmodel.load():
-            print "The IKModel is now being generated. Please being patient, this will take a while (sometimes up to 30 minutes)..."
+            print "The IKModel is now being generated. Please be patient, this will take a while (sometimes up to 30 minutes)..."
             self.ikmodel.autogenerate()
 
     @property
