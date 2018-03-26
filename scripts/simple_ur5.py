@@ -30,6 +30,11 @@ __version__ = "0.0.1"
 
 if __name__ == "__main__":
   ur5_factory = UR5_Factory()
+
+  # The create_ur5_and_env() method takes also the following optional
+  # arguments: is_simulation, has_ridgeback, gripper_name,
+  # has_force_torque_sensor, env_path, viewer_name, urdf_path, and
+  # srdf_path. See ur5_factory.py class for more details.
   env, robot = ur5_factory.create_ur5_and_env()
 
   IPython.embed()
