@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright (C) 2018 The University of Leeds
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,6 +17,16 @@
 #
 # Author: Rafael Papallas (http://papallas.me)
 
+__author__ = "Rafael Papallas"
+__authors__ = ["Rafael Papallas"]
+__copyright__ = "Copyright (C) 2018, The University of Leeds"
+__credits__ = ["Rafael Papallas", "Dr. Mehmet Dogar"]
+__email__ = "Rafael: r.papallas@leeds.ac.uk  |  Mehmet: m.r.dogar@leeds.ac.uk"
+__license__ = "GPLv3"
+__maintainer__ = "Rafael Papallas"
+__status__ = "Production"
+__version__ = "0.0.1"
+
 from openravepy import Robot
 from openravepy import RaveCreateMultiController
 from openravepy import RaveCreateController
@@ -24,18 +36,21 @@ from openravepy import IkParameterization
 
 
 class UR5_Robot(Robot):
-    def __init__(self, is_simulation):
+    def __init__(self, is_simulation, gripper_name):
         self.robot_name = "UR5"
+        self._OPENRAVE_GRIPPER_MAX_VALUE = 0.87266444
+        self._ROBOT_GRIPPER_MAX_VALUE = 255
 
         if not is_simulation:
             self.multicontroller = RaveCreateMultiController(self.env, "")
             self.SetController(self.multicontroller)
 
             robot_controller = RaveCreateController(self.env, 'ur5controller')
-            hand_controller = RaveCreateController(self.env, 'robotiqcontroller')
-
             self.multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
-            self.multicontroller.AttachController(hand_controller, [3], 0)
+
+            if gripper_name == "robotiq_two_finger":
+                hand_controller = RaveCreateController(self.env, 'robotiqcontroller')
+                self.multicontroller.AttachController(hand_controller, [3], 0)
 
         self.manipulator = self.SetActiveManipulator(self.GetManipulators()[0])
         self.task_manipulation = interfaces.TaskManipulation(self)
@@ -53,4 +68,38 @@ class UR5_Robot(Robot):
 
     @property
     def end_effector_transform(self):
+        """End-Effector's current transform property."""
         return self.manipulator.GetTransform()
+
+    def set_gripper_openning(self, value):
+        if value < 0 or value > 255:
+            raise ValueError("Gripper value should be between 0 and 255.")
+
+        # This conversion is required because SetDesired() controller
+        # requires the value to be in terms of a value between 0 and
+        # 0.87266444 (OpenRAVE model limit values) and then is converting
+        # it to a value between 0-255 for the low-level gripper driver.
+        # To make this method more user-friendly, the value is expected
+        # to be between 0 and 255, then we map it down to 0 to 0.87266444
+        # and send it to the gripper controller.
+        model_value = self._OPENRAVE_GRIPPER_MAX_VALUE / self._ROBOT_GRIPPER_MAX_VALUE * abs(value);
+        dof_values = self.GetDOFValues()
+        dof_values[3] = model_value
+
+        self.GetController().SetDesired(dof_values)
+
+    def open_gripper(self, kinbody=None):
+        """
+        Will release fingers (i.e open end-effector).
+
+        Args:
+            kinbody: Optionally, provide an OpenRAVE KinBody that will
+                     be used to release it from the end-effector.
+        """
+        self.task_manipulation.ReleaseFingers(target=kinbody)
+        self.WaitForController(0)
+
+    def close_gripper(self):
+        """Will close fingers of the end-effector until collision."""
+        self.task_manipulation.CloseFingers()
+        self.WaitForController(0)

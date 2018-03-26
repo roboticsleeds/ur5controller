@@ -1,16 +1,6 @@
-"""
-Include a factory class to generate UR5 instances.
+#!/usr/bin/env python
 
-UR5 instances can be generated with different configuration. For example
-the robot may have a ClearPath ridgeback, a two finger gripper etc where
-in another setup the UR5 could not have the ridgeback, and could have
-a three finger gripper instead.
-
-This file define a class that let you create different robot configurations
-on the fly.
-"""
-
-# Copyright (C) 2018 The University of Leeds
+# Copyright (C) 2018 The University of Leeds.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,13 +15,23 @@ on the fly.
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Include a factory class to generate UR5 instances.
+
+UR5 instances can be generated with different configuration. For example
+the robot may have a ClearPath ridgeback, a two finger gripper etc where
+in another setup the UR5 could not have the ridgeback, and could have
+a three finger gripper instead.
+
+This file define a class that let you create different robot configurations
+on the fly.
+"""
+
 __author__ = "Rafael Papallas"
 __authors__ = ["Rafael Papallas"]
-__contact__ = "papallas.me"
 __copyright__ = "Copyright (C) 2018, The University of Leeds"
 __credits__ = ["Rafael Papallas", "Dr. Mehmet Dogar"]
-__deprecated__ = False
-__email__ = "papallas.me"
+__email__ = "Rafael: r.papallas@leeds.ac.uk  |  Mehmet: m.r.dogar@leeds.ac.uk"
 __license__ = "GPLv3"
 __maintainer__ = "Rafael Papallas"
 __status__ = "Production"
@@ -119,7 +119,7 @@ class UR5_Factory(object):
 
         # Add class UR5_Robot to the robot.
         robot.__class__ = UR5_Robot
-        robot.__init__(is_simulation)
+        robot.__init__(is_simulation, gripper_name)
 
         # Required for or_rviz to work with the robot's interactive marker.
         ik_solver = RaveCreateIkSolver(env, robot.ikmodel.getikname())

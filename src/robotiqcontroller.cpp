@@ -156,8 +156,7 @@ class RobotiqController : public ControllerBase {
 
         virtual bool SetDesired(const std::vector <OpenRAVE::dReal> &values,
                                 TransformConstPtr trans) {
-            setValue(ModelValueToRobotValue(values[0]));
-            return true;
+            return setValue(ModelValueToRobotValue(values[0]));
         }
 
         virtual bool SetPath(TrajectoryBaseConstPtr ptraj) {
@@ -171,11 +170,11 @@ class RobotiqController : public ControllerBase {
                                                                           _probot,
                                                                           _dofindices);
 
-                setValue(ModelValueToRobotValue(values[0]));
+                return setValue(ModelValueToRobotValue(values[0]));
               }
             }
 
-            return true;
+            return false;
         }
 
         virtual void SimulationStep(dReal fTimeElapsed) {
@@ -202,7 +201,7 @@ class RobotiqController : public ControllerBase {
           _gripper_publisher.publish(_command);
         }
 
-        void setValue(int value) {
+        bool setValue(int value) {
           if (value >= 0 && value <= 255) {
             _command.rPR = value;
             _command.rACT = 1;
@@ -212,9 +211,11 @@ class RobotiqController : public ControllerBase {
             _command.rFR = 150;
 
             publish_command();
+            return true;
           }
           else {
             ROS_ERROR("The value for the gripper was out of limits 0-255.");
+            return false;
           }
         }
 
