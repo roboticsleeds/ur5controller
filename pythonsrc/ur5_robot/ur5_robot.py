@@ -103,3 +103,8 @@ class UR5_Robot(Robot):
         """Will close fingers of the end-effector until collision."""
         self.task_manipulation.CloseFingers()
         self.WaitForController(0)
+
+    def execute_trajectory_and_wait_for_controller(self, trajectory):
+        self.GetController().SetPath(trajectory)
+        self.WaitForController(0)
+
