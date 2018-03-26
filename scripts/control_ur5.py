@@ -41,7 +41,7 @@ class Demo:
         # arguments: is_simulation, has_ridgeback, gripper_name,
         # has_force_torque_sensor, env_path, viewer_name, urdf_path, and
         # srdf_path. See ur5_factory.py class for more details.
-        self.env, self.robot = ur5_factory.create_ur5_and_env()
+        self.env, self.robot = ur5_factory.create_ur5_and_env(env_path="test_env.xml")
 
         self.move_robot_to_start_transform()
 
