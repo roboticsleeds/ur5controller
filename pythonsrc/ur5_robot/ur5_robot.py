@@ -28,29 +28,16 @@ __status__ = "Production"
 __version__ = "0.0.1"
 
 from openravepy import Robot
-from openravepy import RaveCreateMultiController
-from openravepy import RaveCreateController
 from openravepy import interfaces
 from openravepy import databases
 from openravepy import IkParameterization
 
 
 class UR5_Robot(Robot):
-    def __init__(self, is_simulation, gripper_name):
+    def __init__(self):
         self.robot_name = "UR5"
         self._OPENRAVE_GRIPPER_MAX_VALUE = 0.87266444
         self._ROBOT_GRIPPER_MAX_VALUE = 255
-
-        if not is_simulation:
-            self.multicontroller = RaveCreateMultiController(self.env, "")
-            self.SetController(self.multicontroller)
-
-            robot_controller = RaveCreateController(self.env, 'ur5controller')
-            self.multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
-
-            if gripper_name == "robotiq_two_finger":
-                hand_controller = RaveCreateController(self.env, 'robotiqcontroller')
-                self.multicontroller.AttachController(hand_controller, [3], 0)
 
         self.manipulator = self.SetActiveManipulator(self.GetManipulators()[0])
         self.task_manipulation = interfaces.TaskManipulation(self)
