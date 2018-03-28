@@ -216,7 +216,14 @@ class Ur5Controller : public ControllerBase {
         }
 
         virtual bool IsDone() {
-          return _ac->waitForResult(ros::Duration(0.05));
+          _ac->waitForResult(ros::Duration(0.05));
+          if (_ac->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+            ROS_ERROR("Trajectory succeeded.");
+            return true;
+          } else {
+            ROS_ERROR("Current State: %s\n", _ac->getState().toString().c_str());
+            return false;
+          }
         }
 
         virtual OpenRAVE::dReal GetTime() const {
