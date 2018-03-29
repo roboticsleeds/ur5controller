@@ -12,7 +12,7 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//  
+//
 //  Author: Rafael Papallas (www.papallas.me)
 
 #include <boost/bind.hpp>
@@ -75,7 +75,7 @@ class Ur5Controller : public ControllerBase {
             Initialiser when the robot is attached to the controller.
 
             Subscribes to the topic /joint_states that listens to changes to the
-            robot joints and calls a callback to act on the new values. Will 
+            robot joints and calls a callback to act on the new values. Will
             also crient an action client to send trajectories to the action
             server.
         */
@@ -133,7 +133,7 @@ class Ur5Controller : public ControllerBase {
             if (it == ptraj->GetConfigurationSpecification()._vgroups.end()) {
                 return traj;
             }
-            
+
             for(int i=ptraj->GetNumWaypoints()-1; i >= 0; i--) {
                 std::vector <dReal> values(1);
                 ptraj->GetWaypoint(i,values,*it);
@@ -206,7 +206,7 @@ class Ur5Controller : public ControllerBase {
 
             return trajectory;
         }
-        
+
         virtual void SimulationStep(dReal fTimeElapsed) {
             if (!_initialized) {
                 return;
@@ -216,14 +216,12 @@ class Ur5Controller : public ControllerBase {
         }
 
         virtual bool IsDone() {
-          _ac->waitForResult(ros::Duration(1.0));
+          _ac->waitForResult(ros::Duration(5.0));
           if (_ac->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-            ROS_ERROR("Trajectory succeeded.");
             return true;
-          } else {
-            ROS_ERROR("Current State: %s\n", _ac->getState().toString().c_str());
-            return false;
           }
+
+          return false;
         }
 
         virtual OpenRAVE::dReal GetTime() const {

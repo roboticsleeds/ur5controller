@@ -37,12 +37,14 @@ __maintainer__ = "Rafael Papallas"
 __status__ = "Production"
 __version__ = "0.0.1"
 
+import rospy
 from openravepy import RaveInitialize
 from openravepy import Environment
 from openravepy import RaveCreateModule
 from openravepy import RaveCreateIkSolver
 from openravepy import RaveCreateMultiController
 from openravepy import RaveCreateController
+from openravepy import RaveLogWarn
 from ur5_robot import UR5_Robot
 
 
@@ -119,10 +121,6 @@ class UR5_Factory(object):
                                          has_force_torque_sensor, urdf_path,
                                          srdf_path)
 
-        # Add class UR5_Robot to the robot.
-        robot.__class__ = UR5_Robot
-        robot.__init__()
-
         if not is_simulation:
             robot.multicontroller = RaveCreateMultiController(env, "")
             robot.SetController(robot.multicontroller)
@@ -131,8 +129,15 @@ class UR5_Factory(object):
             robot.multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
 
             if gripper_name == "robotiq_two_finger":
-                hand_controller = RaveCreateController(env, 'robotiqcontroller')
-                robot.multicontroller.AttachController(hand_controller, [3], 0)
+                if self._is_rostopic_name_exists("CModelRobotInput") and self._is_rostopic_name_exists("CModelRobotOutput"):
+                    hand_controller = RaveCreateController(env, 'robotiqcontroller')
+                    robot.multicontroller.AttachController(hand_controller, [3], 0)
+                else:
+                    RaveLogWarn("End-effector controller not attached, topics ('CModelRobotInput' or/and 'CModelRobotOutput') are not available.")
+
+        # Add class UR5_Robot to the robot.
+        robot.__class__ = UR5_Robot
+        robot.__init__()
 
         # Required for or_rviz to work with the robot's interactive marker.
         ik_solver = RaveCreateIkSolver(env, robot.ikmodel.getikname())
@@ -141,6 +146,18 @@ class UR5_Factory(object):
         self._set_viewer(env, viewer_name)
 
         return env, robot
+
+    def _is_rostopic_name_exists(self, topic_name):
+        if topic_name[0] != "/":
+            topic_name = "/" + topic_name
+
+        topics = rospy.get_published_topics()
+        for topic in topics:
+            if topic[0] == topic_name:
+                return True
+
+        return False
+
 
     def _get_file_name_from_specification(self, gripper_name, has_ridgeback,
                                           has_force_torque_sensor):

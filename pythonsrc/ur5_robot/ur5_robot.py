@@ -14,8 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# Author: Rafael Papallas (http://papallas.me)
 
 __author__ = "Rafael Papallas"
 __authors__ = ["Rafael Papallas"]
@@ -74,6 +72,7 @@ class UR5_Robot(Robot):
         dof_values[3] = model_value
 
         self.GetController().SetDesired(dof_values)
+        self.WaitForController(0)
 
     def open_gripper(self, kinbody=None):
         """
@@ -83,13 +82,11 @@ class UR5_Robot(Robot):
             kinbody: Optionally, provide an OpenRAVE KinBody that will
                      be used to release it from the end-effector.
         """
-        self.task_manipulation.ReleaseFingers(target=kinbody)
-        self.WaitForController(0)
+        raise NotImplementedError("This functionality is not implemented yet. Use set_gripper_openning instead.")
 
     def close_gripper(self):
         """Will close fingers of the end-effector until collision."""
-        self.task_manipulation.CloseFingers()
-        self.WaitForController(0)
+        raise NotImplementedError("This functionality is not implemented yet. Use set_gripper_openning instead.")
 
     def execute_trajectory_and_wait_for_controller(self, trajectory):
         self.GetController().SetPath(trajectory)
