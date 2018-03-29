@@ -216,7 +216,7 @@ class Ur5Controller : public ControllerBase {
         }
 
         virtual bool IsDone() {
-          _ac->waitForResult(ros::Duration(5.0));
+          _ac->waitForResult(ros::Duration(1.0));
           if (_ac->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
             return true;
           }
