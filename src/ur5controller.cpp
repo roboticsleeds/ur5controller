@@ -44,6 +44,10 @@ class Ur5Controller : public ControllerBase {
             _paused = false;
             _initialized = false;
             _velocity_maximum_limit_per_joint = 0.2;
+
+            // Keeps track of whether a client asked from this class to send a
+            // a goal to the action server.
+            _goal_requested = false;
         }
 
         /**
@@ -146,6 +150,7 @@ class Ur5Controller : public ControllerBase {
 
         virtual bool SetPath(TrajectoryBaseConstPtr ptraj) {
             if (ptraj != NULL) {
+                _goal_requested = true;
                 TrajectoryBasePtr traj = SimplifyTrajectory(ptraj);
 
                 PlannerStatus status = planningutils::RetimeTrajectory(traj, false, 1.0, 1.0, "LinearTrajectoryRetimer");
@@ -216,12 +221,12 @@ class Ur5Controller : public ControllerBase {
         }
 
         virtual bool IsDone() {
-          _ac->waitForResult(ros::Duration(1.0));
-          if (_ac->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-            return true;
+          if (_goal_requested) {
+            _goal_requested = false;
+            return _ac->waitForResult(ros::Duration(1.0));
           }
 
-          return false;
+          return true;
         }
 
         virtual OpenRAVE::dReal GetTime() const {
@@ -236,6 +241,7 @@ class Ur5Controller : public ControllerBase {
     private:
         bool _initialized;
         bool _paused;
+        bool _goal_requested;
         int _nControlTransformation;
         dReal _velocity_maximum_limit_per_joint;
 
