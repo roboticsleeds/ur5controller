@@ -129,6 +129,10 @@ class UR5_Factory(object):
             robot.multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
 
             if gripper_name == "robotiq_two_finger":
+                # Attach the end-effector controller iff the two topics are available.
+                # This is a defensive mechanism to avoid IsDone() method of the
+                # end-effector controller block the program execution. For further
+                # discussion, see this thread: https://stackoverflow.com/questions/49552755/openrave-controllerbase-is-blocking-at-the-isdone-method-and-never-returns/49552756#49552756
                 if self._is_rostopic_name_exists("CModelRobotInput") and self._is_rostopic_name_exists("CModelRobotOutput"):
                     hand_controller = RaveCreateController(env, 'robotiqcontroller')
                     robot.multicontroller.AttachController(hand_controller, [3], 0)
@@ -148,10 +152,22 @@ class UR5_Factory(object):
         return env, robot
 
     def _is_rostopic_name_exists(self, topic_name):
+        """
+        Will check if a given ROS topic name is being published.
+
+        Args:
+            topic_name: The ROS topic name to check.
+        Returns:
+            True if the topic name exist (being published already),
+            false otherwise.
+        """
+        # The ROS topic name always start with '/' character.
         if topic_name[0] != "/":
             topic_name = "/" + topic_name
 
+        # List of all published ROS topics
         topics = rospy.get_published_topics()
+
         for topic in topics:
             if topic[0] == topic_name:
                 return True
