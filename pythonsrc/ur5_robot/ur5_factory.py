@@ -122,18 +122,19 @@ class UR5_Factory(object):
                                          srdf_path)
 
         if not is_simulation:
-            robot.multicontroller = RaveCreateMultiController(env, "")
-            robot.SetController(robot.multicontroller)
+            if self._is_rostopic_name_exists("joint_states"):
+                robot.multicontroller = RaveCreateMultiController(env, "")
+                robot.SetController(robot.multicontroller)
 
-            robot_controller = RaveCreateController(env, 'ur5controller')
-            robot.multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
+                robot_controller = RaveCreateController(env, 'ur5controller')
+                robot.multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
 
-            if gripper_name == "robotiq_two_finger":
-                if self._is_rostopic_name_exists("CModelRobotInput") and self._is_rostopic_name_exists("CModelRobotOutput"):
-                    hand_controller = RaveCreateController(env, 'robotiqcontroller')
-                    robot.multicontroller.AttachController(hand_controller, [3], 0)
-                else:
-                    RaveLogWarn("End-effector controller not attached, topics ('CModelRobotInput' or/and 'CModelRobotOutput') are not available.")
+                if gripper_name == "robotiq_two_finger":
+                    if self._is_rostopic_name_exists("CModelRobotInput") and self._is_rostopic_name_exists("CModelRobotOutput"):
+                        hand_controller = RaveCreateController(env, 'robotiqcontroller')
+                        robot.multicontroller.AttachController(hand_controller, [3], 0)
+                    else:
+                        RaveLogWarn("End-effector controller not attached, topics ('CModelRobotInput' or/and 'CModelRobotOutput') are not available.")
 
         # Add class UR5_Robot to the robot.
         robot.__class__ = UR5_Robot
