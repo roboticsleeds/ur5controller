@@ -38,12 +38,11 @@ __status__ = "Production"
 __version__ = "0.0.1"
 
 import rospy
-from openravepy import RaveInitialize
 from openravepy import Environment
-from openravepy import RaveCreateModule
 from openravepy import RaveCreateIkSolver
-from openravepy import RaveCreateMultiController
-from openravepy import RaveCreateController
+from openravepy import RaveCreateModule
+from openravepy import RaveInitialize
+from openravepy import RaveLogInfo
 from openravepy import RaveLogWarn
 from ur5_robot import UR5_Robot
 
@@ -109,50 +108,71 @@ class UR5_Factory(object):
             ValueError: If gripper_name is invalid invalid.
         """
         if gripper_name not in self._available_grippers:
-            raise ValueError("Gripper {} is not supported. The only available gripper names are: {}".format(gripper_name, ', '.join(self._available_grippers)))
+            raise ValueError("Gripper {} is not supported. The only " \
+                             "available gripper names are: " \
+                             "{}".format(gripper_name,
+                                         ', '.join(self._available_grippers)))
 
         # TODO: Create URDFs that do not include the ridgeback.
         if not has_ridgeback:
-            raise NotImplementedError("Robot configuration without ridgeback is not yet available. Robot configuration without the Clearpath Ridgeback is under development at the moment (please check that you also have the latest version of this code).")
+            raise NotImplementedError("Robot configuration without ridgeback " \
+                                      "is not yet available. Robot configuration " \
+                                      "without the Clearpath Ridgeback is under " \
+                                      "development at the moment (please check " \
+                                      "that you also have the latest version " \
+                                      "of this code).")
 
         RaveInitialize(True)
-        env = self._create_environment(env_path)
-        robot = self._load_ur5_from_urdf(env, gripper_name, has_ridgeback,
-                                         has_force_torque_sensor, urdf_path,
-                                         srdf_path)
-
-        if not is_simulation:
-            if self._is_rostopic_name_exists("joint_states"):
-                robot.multicontroller = RaveCreateMultiController(env, "")
-                robot.SetController(robot.multicontroller)
-
-                robot_controller = RaveCreateController(env, 'ur5controller')
-                robot.multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
-
-                if gripper_name == "robotiq_two_finger":
-                    # Attach the end-effector controller iff the two topics are available.
-                    # This is a defensive mechanism to avoid IsDone() method of the
-                    # end-effector controller block the program execution. For further
-                    # discussion, see this thread: https://stackoverflow.com/questions/49552755/openrave-controllerbase-is-blocking-at-the-isdone-method-and-never-returns/49552756#49552756
-                    if self._is_rostopic_name_exists("CModelRobotInput") and self._is_rostopic_name_exists("CModelRobotOutput"):
-                        hand_controller = RaveCreateController(env, 'robotiqcontroller')
-                        robot.multicontroller.AttachController(hand_controller, [3], 0)
-                    else:
-                        RaveLogWarn("End-effector controller not attached, topics ('CModelRobotInput' or/and 'CModelRobotOutput') are not available.")
-            else:
-                RaveLogWarn("UR5 Controller not attached to robot. Required topics not being published, rolling back to simulation.")
+        self.env = self._create_environment(env_path)
+        self.robot = self._load_ur5_from_urdf(gripper_name, has_ridgeback,
+                                              has_force_torque_sensor, urdf_path,
+                                              srdf_path)
 
         # Add class UR5_Robot to the robot.
-        robot.__class__ = UR5_Robot
-        robot.__init__()
+        self.robot.__class__ = UR5_Robot
+        self.robot.__init__()
+
+        # Attach controllers
+        if not is_simulation:
+            self._attach_robot_controller()
+            self._attach_gripper_controller(gripper_name)
 
         # Required for or_rviz to work with the robot's interactive marker.
-        ik_solver = RaveCreateIkSolver(env, robot.ikmodel.getikname())
-        robot.manipulator.SetIkSolver(ik_solver)
+        self._set_ik_solver()
 
-        self._set_viewer(env, viewer_name)
+        self._set_viewer(viewer_name)
 
-        return env, robot
+        return self.env, self.robot
+
+    def _set_ik_solver(self):
+        ik_solver = RaveCreateIkSolver(self.env, self.robot.ikmodel.getikname())
+        self.robot.manipulator.SetIkSolver(ik_solver)
+
+    def _attach_gripper_controller(self, gripper_name):
+        if gripper_name == "robotiq_two_finger":
+            controller_name = "robotiqcontroller"
+
+        if self._is_rostopic_name_exists("CModelRobotInput"):
+            self.robot.attach_controller(name=controller_name, dof_indices=[3])
+            RaveLogInfo("robotiq_two_finger controller attached successfully.")
+        else:
+            RaveLogWarn("End-effector controller not attached, " \
+                        "topics ('CModelRobotInput' or/and " \
+                        "'CModelRobotOutput') are not available.")
+
+    def _attach_robot_controller(self):
+        # This is a defensive mechanism to avoid IsDone() method of the
+        # end-effector controller block the program execution. For further
+        # discussion, see this thread: https://stackoverflow.com/questions/49552755/openrave-controllerbase-is-blocking-at-the-isdone-method-and-never-returns/49552756#49552756
+        if self._is_rostopic_name_exists("joint_states"):
+            self.robot.attach_controller(name="ur5controller",
+                                         dof_indices=[2, 1, 0, 4, 5, 6])
+
+            RaveLogInfo("UR5 controller attached successfully.")
+        else:
+            RaveLogWarn("UR5 Controller not attached to robot. Required " \
+                        "topics not being published, rolling back to " \
+                        "simulation.")
 
     def _is_rostopic_name_exists(self, topic_name):
         """
@@ -209,7 +229,7 @@ class UR5_Factory(object):
         if gripper_name == "robotiq_three_finger" and has_ridgeback and not has_force_torque_sensor:
             return "clearpath_ridgeback__ur5__robotiq_three_finger_gripper"
 
-    def _load_ur5_from_urdf(self, env, gripper_name, has_ridgeback,
+    def _load_ur5_from_urdf(self, gripper_name, has_ridgeback,
                             has_force_torque_sensor, urdf_path, srdf_path):
         """
         Load a UR5 robot model from URDF to the environment.
@@ -219,7 +239,6 @@ class UR5_Factory(object):
         return a robot instance back.
 
         Args:
-            env: The environment to load the robot to.
             gripper_name: The gripper name to be loaded.
             has_ridgeback: Whether ClearPath Ridgeback will be loaded with
                 the robot model.
@@ -244,23 +263,24 @@ class UR5_Factory(object):
         urdf_path = urdf_path + "{}.urdf".format(file_name)
         srdf_path = srdf_path + "{}.srdf".format(file_name)
 
-        urdf_module = RaveCreateModule(env, 'urdf')
+        urdf_module = RaveCreateModule(self.env, 'urdf')
+
         if urdf_module is None:
-            raise Exception("Unable to load or_urdf module. Make sure you "
-                            "have or_urdf installed in your Catkin "
-                            "check: "
+            raise Exception("Unable to load or_urdf module. Make sure you " \
+                            "have or_urdf installed in your Catkin " \
+                            "check: " \
                             "https://github.com/personalrobotics/or_urdf")
 
         ur5_name = urdf_module.SendCommand('LoadURI {} {}'.format(urdf_path,
                                                                   srdf_path))
         if ur5_name is None:
-            raise Exception("Something went wrong while trying to load "
+            raise Exception("Something went wrong while trying to load " \
                             "UR5 from file. Is the path correct?")
 
-        robot = env.GetRobot(ur5_name)
+        robot = self.env.GetRobot(ur5_name)
 
         if robot is None:
-            raise Exception("Unable to find robot with "
+            raise Exception("Unable to find robot with " \
                             "name '{}'.".format(ur5_name))
 
         return robot
@@ -290,18 +310,17 @@ class UR5_Factory(object):
 
         return env
 
-    def _set_viewer(self, env, viewer_name):
+    def _set_viewer(self, viewer_name):
         """
         Set the viewer using the user-specified viewer_name.
 
         Args:
-            env: The environment to set the viewer to.
             viewer_name: The name of viewer to be set.
 
         Raises:
             Exception: If there was a problem setting the viewer.
         """
-        env.SetViewer(viewer_name)
-        if env.GetViewer() is None:
+        self.env.SetViewer(viewer_name)
+        if self.env.GetViewer() is None:
             raise Exception("There was something wrong when loading " \
                             "the {} viewer.".format(viewer_name))

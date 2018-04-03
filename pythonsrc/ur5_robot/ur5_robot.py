@@ -25,10 +25,13 @@ __maintainer__ = "Rafael Papallas"
 __status__ = "Production"
 __version__ = "0.0.1"
 
-from openravepy import Robot
-from openravepy import interfaces
 from openravepy import databases
 from openravepy import IkParameterization
+from openravepy import interfaces
+from openravepy import RaveCreateController
+from openravepy import RaveCreateMultiController
+from openravepy import RaveLogInfo
+from openravepy import Robot
 
 
 class UR5_Robot(Robot):
@@ -36,6 +39,9 @@ class UR5_Robot(Robot):
         self.robot_name = "UR5"
         self._OPENRAVE_GRIPPER_MAX_VALUE = 0.87266444
         self._ROBOT_GRIPPER_MAX_VALUE = 255
+
+        self.multicontroller = RaveCreateMultiController(self.GetEnv(), "")
+        self.SetController(self.multicontroller)
 
         self.manipulator = self.SetActiveManipulator(self.GetManipulators()[0])
         self.task_manipulation = interfaces.TaskManipulation(self)
@@ -48,13 +54,20 @@ class UR5_Robot(Robot):
 
         self.ikmodel = databases.inversekinematics.InverseKinematicsModel(self, iktype=IkParameterization.Type.Transform6D)
         if not self.ikmodel.load():
-            print "The IKModel is now being generated. Please be patient, this will take a while (sometimes up to 30 minutes)..."
+            RaveLogInfo("The IKModel for UR5 robot is now being generated. " \
+                        "Please be patient, this will take a while " \
+                        "(sometimes up to 30 minutes)...")
+
             self.ikmodel.autogenerate()
 
     @property
     def end_effector_transform(self):
         """End-Effector's current transform property."""
         return self.manipulator.GetTransform()
+
+    def attach_controller(self, name, dof_indices):
+        controller = RaveCreateController(self.GetEnv(), name)
+        self.multicontroller.AttachController(controller, dof_indices, 0)
 
     def set_gripper_openning(self, value):
         if value < 0 or value > 255:
