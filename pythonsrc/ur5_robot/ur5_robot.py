@@ -40,6 +40,8 @@ class UR5_Robot(Robot):
         self._OPENRAVE_GRIPPER_MAX_VALUE = 0.87266444
         self._ROBOT_GRIPPER_MAX_VALUE = 255
 
+        self.multicontroller = RaveCreateMultiController(self.GetEnv(), "")
+
         self.manipulator = self.SetActiveManipulator(self.GetManipulators()[0])
         self.task_manipulation = interfaces.TaskManipulation(self)
         self.base_manipulation = interfaces.BaseManipulation(self)
@@ -63,12 +65,11 @@ class UR5_Robot(Robot):
         return self.manipulator.GetTransform()
 
     def attach_controller(self, name, dof_indices):
-        if self.multicontroller is None:
-            self.multicontroller = RaveCreateMultiController(self.GetEnv(), "")
-            self.SetController(self.multicontroller)
-
         controller = RaveCreateController(self.GetEnv(), name)
-        self.multicontroller.AttachController(controller, dof_indices, 0)
+
+        if controller is not None:
+            self.SetController(self.multicontroller)
+            self.multicontroller.AttachController(controller, dof_indices, 0)
 
     def set_gripper_openning(self, value):
         if value < 0 or value > 255:
