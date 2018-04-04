@@ -170,11 +170,11 @@ class RobotiqController : public ControllerBase {
                                                                           _probot,
                                                                           _dofindices);
 
-                return setValue(ModelValueToRobotValue(values[0]));
+                setValue(ModelValueToRobotValue(values[0]));
               }
             }
 
-            return false;
+            return true;
         }
 
         virtual void SimulationStep(dReal fTimeElapsed) {
