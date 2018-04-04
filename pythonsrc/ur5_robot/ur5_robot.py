@@ -41,15 +41,12 @@ class UR5_Robot(Robot):
         self._ROBOT_GRIPPER_MAX_VALUE = 255
 
         self.multicontroller = RaveCreateMultiController(self.GetEnv(), "")
-
         self.manipulator = self.SetActiveManipulator(self.GetManipulators()[0])
-        self.task_manipulation = interfaces.TaskManipulation(self)
-        self.base_manipulation = interfaces.BaseManipulation(self)
 
         # Needed for "find a grasp" function (not parsed using or_urdf hence
         # needs manual setting)
-        self.GetManipulators()[0].SetChuckingDirection([1.0])
-        self.GetManipulators()[0].SetLocalToolDirection([1.0, 0, 0])
+        self.manipulator.SetChuckingDirection([1.0])
+        self.manipulator.SetLocalToolDirection([1.0, 0, 0])
 
         self.ikmodel = databases.inversekinematics.InverseKinematicsModel(self, iktype=IkParameterization.Type.Transform6D)
         if not self.ikmodel.load():
@@ -58,6 +55,9 @@ class UR5_Robot(Robot):
                         "(sometimes up to 30 minutes)...")
 
             self.ikmodel.autogenerate()
+
+        self.task_manipulation = interfaces.TaskManipulation(self)
+        self.base_manipulation = interfaces.BaseManipulation(self)
 
     @property
     def end_effector_transform(self):
@@ -68,6 +68,12 @@ class UR5_Robot(Robot):
         controller = RaveCreateController(self.GetEnv(), name)
 
         if controller is not None:
+            # Attaching the multicontroller now since we know that a
+            # valid controller has been created. If multicontroller is
+            # set to the robot with no controller attached to the
+            # multicontroller, then OpenRAVE will fail to execute any
+            # trajectories in simulation, setting the multicontroller now
+            # ensures that this won't happen.
             self.SetController(self.multicontroller)
             self.multicontroller.AttachController(controller, dof_indices, 0)
 
@@ -86,8 +92,9 @@ class UR5_Robot(Robot):
         dof_values = self.GetDOFValues()
         dof_values[3] = model_value
 
-        self.GetController().SetDesired(dof_values)
-        self.WaitForController(0)
+        with self.GetEnv():
+            self.GetController().SetDesired(dof_values)
+            self.WaitForController(0)
 
     def open_gripper(self, kinbody=None):
         """
@@ -97,13 +104,18 @@ class UR5_Robot(Robot):
             kinbody: Optionally, provide an OpenRAVE KinBody that will
                      be used to release it from the end-effector.
         """
-        raise NotImplementedError("This functionality is not implemented yet. Use set_gripper_openning instead.")
+        with self.GetEnv():
+            self.task_manipulation.ReleaseFingers(target=kinbody)
+            self.WaitForController(0)
 
     def close_gripper(self):
         """Will close fingers of the end-effector until collision."""
-        raise NotImplementedError("This functionality is not implemented yet. Use set_gripper_openning instead.")
+        with self.GetEnv():
+            self.task_manipulation.CloseFingers()
+            self.WaitForController(0)
 
     def execute_trajectory_and_wait_for_controller(self, trajectory):
-        self.GetController().SetPath(trajectory)
-        self.WaitForController(0)
+        with self.GetEnv():
+            self.GetController().SetPath(trajectory)
+            self.WaitForController(0)
 
