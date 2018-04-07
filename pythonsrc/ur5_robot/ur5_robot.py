@@ -92,9 +92,8 @@ class UR5_Robot(Robot):
         dof_values = self.GetDOFValues()
         dof_values[3] = model_value
 
-        with self.GetEnv():
-            self.GetController().SetDesired(dof_values)
-            self.WaitForController(0)
+        self.GetController().SetDesired(dof_values)
+        self.WaitForController(0)
 
     def open_gripper(self, kinbody=None):
         """
@@ -104,18 +103,15 @@ class UR5_Robot(Robot):
             kinbody: Optionally, provide an OpenRAVE KinBody that will
                      be used to release it from the end-effector.
         """
-        with self.GetEnv():
-            self.task_manipulation.ReleaseFingers(target=kinbody)
-            self.WaitForController(0)
+        self.task_manipulation.ReleaseFingers(target=kinbody)
+        self.WaitForController(0)
 
     def close_gripper(self):
         """Will close fingers of the end-effector until collision."""
-        with self.GetEnv():
-            self.task_manipulation.CloseFingers()
-            self.WaitForController(0)
+        self.task_manipulation.CloseFingers()
+        self.WaitForController(0)
 
     def execute_trajectory_and_wait_for_controller(self, trajectory):
-        with self.GetEnv():
-            self.GetController().SetPath(trajectory)
-            self.WaitForController(0)
+        self.GetController().SetPath(trajectory)
+        self.WaitForController(0)
 
