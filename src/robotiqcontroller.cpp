@@ -258,7 +258,7 @@ class RobotiqController : public ControllerBase {
         RobotBasePtr _probot;
         EnvironmentBasePtr _penv;
 
-        const float OPENRAVE_GRIPPER_MAX_VALUE = 0.87266444;
+        const float OPENRAVE_GRIPPER_MAX_VALUE = 0.77;
         const int ROBOT_GRIPPER_MAX_VALUE = 255;
 };
 

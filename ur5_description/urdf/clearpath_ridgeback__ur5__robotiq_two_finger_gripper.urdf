@@ -433,30 +433,32 @@
 
   <link name="arm_stand_link">
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ur5controller/ur5_description/ridgeback/arm_stand.stl"/>
+        <cylinder length="0.459" radius="0.1"/>
       </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.2295"/>
       <material name="white"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://ur5controller/ur5_description/ridgeback/arm_stand.stl"/>
+        <cylinder length="0.459" radius="0.1"/>
       </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.2295"/>
     </collision>
   </link>
 
   <joint name="arm_stand_joint" type="fixed">
-    <parent link="ridgeback_base_link"/>
+    <parent link="mid_mount"/>
     <child link="arm_stand_link"/>
-    <origin rpy="0 0 0" xyz="-3.703 9 0.28"/>
+    <origin rpy="0 0 0" xyz="0.28 0.0 0.0"/>
   </joint>
 
-  <joint name="ridgeback_to_arm_joint" type="fixed">
-    <parent link="axle_link"/>
+  <joint name="arm_stand_to_arm_joint" type="fixed">
+    <parent link="arm_stand_link"/>
     <child link="base_link"/>
-    <origin rpy="0 0 -1.57" xyz="0.3 0 0.734"/>
+    <origin rpy="0 0 -1.57" xyz="0.0 0.0 0.462"/> <!-- 0.462 = 0.459 + 0.003 where 0.003 is the distance between very bottom of the arm base and its base_link-->
   </joint>
+
 
   <!-- ===================================================================  -->
   <!--                       UR5 ROBOT DESCRIPTION                          -->
@@ -817,7 +819,7 @@
     <parent link="simple_gripper_base"/>
     <child link="simple_gripper_right_driver"/>
     <axis xyz="1 0 0"/>
-    <limit effort="60" lower="0.0" upper="0.872664444444" velocity="1.91986177778"/>
+    <limit effort="60" lower="0.0" upper="0.77" velocity="1.91986177778"/>
   </joint>
 
   <link name="simple_gripper_right_driver">
