@@ -223,7 +223,7 @@ class Ur5Controller : public ControllerBase {
         virtual bool IsDone() {
           if (_goal_requested) {
             _goal_requested = false;
-            return _ac->waitForResult(ros::Duration(1.0));
+            return _ac->waitForResult();
           }
 
           return true;
