@@ -37,7 +37,7 @@ from openravepy import Robot
 class UR5_Robot(Robot):
     def __init__(self):
         self.robot_name = "UR5"
-        self._OPENRAVE_GRIPPER_MAX_VALUE = 0.77
+        self._OPENRAVE_GRIPPER_MAX_VALUE = 0.7155848
         self._ROBOT_GRIPPER_MAX_VALUE = 255
 
         self.multicontroller = RaveCreateMultiController(self.GetEnv(), "")
