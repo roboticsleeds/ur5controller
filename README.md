@@ -43,9 +43,11 @@ directory by running the following command in the terminal: `echo
 - Go to your catkin workspace `cd ~/catkin_ws` and run `catkin_make`. You should 
 see a successful message on build in which case you are ready to go. If you get 
 any errors at this stage, please review what went wrong.
-- Add in your `.bashrc` the Python path to the UR5 class by running `echo 
-'export PYTHONPATH=$PYTHONPATH:~/catkin_ws/src/ur5controller/pythonsrc/ur5_robot' 
->> ~/.bashrc`. This will let Python know where the Python classes for 
+- Add in your `.bashrc` the Python path to the UR5 class by running 
+```bash
+echo 'export PYTHONPATH=$PYTHONPATH:~/catkin_ws/src/ur5controller/pythonsrc/ur5_robot' >> ~/.bashrc`
+```
+This will let Python know where the Python classes for 
 creating UR5 robot instances in OpenRAVE are.
 
 ## Testing the controller
