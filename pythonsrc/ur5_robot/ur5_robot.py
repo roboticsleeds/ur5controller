@@ -64,6 +64,12 @@ class UR5_Robot(Robot):
         """End-Effector's current transform property."""
         return self.manipulator.GetTransform()
 
+    def is_gripper_fully_open(self):
+        return self.GetDOFValues()[3] == 0
+
+    def is_gripper_fully_closed(self):
+        return self.GetDOFValues()[3] == self._OPENRAVE_GRIPPER_MAX_VALUE
+
     def attach_controller(self, name, dof_indices):
         controller = RaveCreateController(self.GetEnv(), name)
 
