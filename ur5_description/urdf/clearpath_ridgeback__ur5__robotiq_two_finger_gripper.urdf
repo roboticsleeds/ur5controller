@@ -412,15 +412,15 @@
 
   <link name="base_computer_box_link">
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="-1.55 -2.5 17.3"/>
       <geometry>
-        <mesh filename="package://ur5controller/ur5_description/ridgeback/base_computer_box.stl"/>
+        <box size="0.4 0.6 0.6"/>
       </geometry>
-      <material name="white"/>
     </visual>
     <collision>
+      <origin rpy="0 0 0" xyz="-1.55 -2.5 17.3"/>
       <geometry>
-        <mesh filename="package://ur5controller/ur5_description/ridgeback/base_computer_box.stl"/>
+          <box size="0.4 0.6 0.6"/>
       </geometry>
     </collision>
   </link>
