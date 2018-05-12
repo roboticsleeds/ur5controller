@@ -35,6 +35,6 @@ if __name__ == "__main__":
   # arguments: is_simulation, has_ridgeback, gripper_name,
   # has_force_torque_sensor, env_path, viewer_name, urdf_path, and
   # srdf_path. See ur5_factory.py class for more details.
-  env, robot = ur5_factory.create_ur5_and_env(is_simulation=False)
+  env, robot = ur5_factory.create_ur5_and_env(is_simulation=True, has_force_torque_sensor=False)
 
   IPython.embed()

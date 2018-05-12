@@ -144,6 +144,8 @@ class RobotiqController : public ControllerBase {
         }
 
         virtual void Reset(int options) {
+          _command.rACT = 0;
+          publish_command();
         }
 
         virtual const std::vector<int> &GetControlDOFIndices() const {
@@ -160,20 +162,6 @@ class RobotiqController : public ControllerBase {
         }
 
         virtual bool SetPath(TrajectoryBaseConstPtr ptraj) {
-            if (ptraj != NULL) {
-              for(int i=0; i < ptraj->GetNumWaypoints(); i++) {
-                vector <dReal> or_waypoint;
-                ptraj->GetWaypoint(i, or_waypoint);
-                std::vector <dReal> values(1);
-                ptraj->GetConfigurationSpecification().ExtractJointValues(values.begin(),
-                                                                          or_waypoint.begin(),
-                                                                          _probot,
-                                                                          _dofindices);
-
-                setValue(ModelValueToRobotValue(values[0]));
-              }
-            }
-
             return true;
         }
 
@@ -233,8 +221,6 @@ class RobotiqController : public ControllerBase {
         void activate() {
           _command.rACT = 1;
           _command.rGTO = 0;
-          _command.rATR = 0;
-          _command.rPR = 0;
           _command.rSP = 255;
           _command.rFR = 150;
 

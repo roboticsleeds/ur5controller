@@ -69,14 +69,6 @@ class Demo:
         waypoint_below_threshold = [x < numpy.pi/3 for x in waypoint_sums]
         return all(waypoint_below_threshold)
 
-    def execute_trajectory_object(self, trajectory_object):
-        try:
-            self.robot.GetController().SetPath(trajectory_object)
-            self.robot.WaitForController(0)
-        except planning_error, e:
-            print "ERROR: There was an error when executing the trajectory."
-            print e
-
     def rotate_hand(self, rotation_matrix):
         current_hand_transform = self.robot.end_effector_transform
         goal_transform = numpy.dot(current_hand_transform, rotation_matrix)
@@ -111,7 +103,7 @@ class Demo:
                 print e
 
             if trajectory_object and self.is_trajectory_safe(trajectory_object):
-                self.execute_trajectory_object(trajectory_object)
+                self.robot.execute_trajectory_and_wait_for_controller(trajectory_object)
             else:
                 print "The trajectory failed the safety check."
         else:
