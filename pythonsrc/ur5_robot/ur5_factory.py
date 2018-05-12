@@ -130,7 +130,7 @@ class UR5_Factory(object):
 
         # Add class UR5_Robot to the robot.
         self.robot.__class__ = UR5_Robot
-        self.robot.__init__()
+        self.robot.__init__(is_simulation)
 
         # Attach controllers
         if not is_simulation:

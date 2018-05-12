@@ -35,12 +35,15 @@ from openravepy import Robot
 
 
 class UR5_Robot(Robot):
-    def __init__(self):
+    def __init__(self, is_in_simulation):
         self.robot_name = "UR5"
         self._OPENRAVE_GRIPPER_MAX_VALUE = 0.715584844
         self._ROBOT_GRIPPER_MAX_VALUE = 255
 
-        self.multicontroller = RaveCreateMultiController(self.GetEnv(), "")
+        if not is_in_simulation:
+            self.multicontroller = RaveCreateMultiController(self.GetEnv(), "")
+            self.SetController(self.multicontroller)
+ 
         self.manipulator = self.SetActiveManipulator(self.GetManipulators()[0])
 
         # Needed for "find a grasp" function (not parsed using or_urdf hence
@@ -80,8 +83,10 @@ class UR5_Robot(Robot):
             # multicontroller, then OpenRAVE will fail to execute any
             # trajectories in simulation, setting the multicontroller now
             # ensures that this won't happen.
-            self.SetController(self.multicontroller)
             self.multicontroller.AttachController(controller, dof_indices, 0)
+            return True
+
+        return False
 
     def set_gripper_openning(self, value):
         if value < 0 or value > 255:
@@ -102,20 +107,10 @@ class UR5_Robot(Robot):
         self.WaitForController(0)
 
     def open_gripper(self, kinbody=None):
-        """
-        Will release fingers (i.e open end-effector).
-
-        Args:
-            kinbody: Optionally, provide an OpenRAVE KinBody that will
-                     be used to release it from the end-effector.
-        """
-        self.task_manipulation.ReleaseFingers(target=kinbody)
-        self.WaitForController(0)
+        self.set_gripper_openning(0)
 
     def close_gripper(self):
-        """Will close fingers of the end-effector until collision."""
-        self.task_manipulation.CloseFingers()
-        self.WaitForController(0)
+        self.set_gripper_openning(255)
 
     def execute_trajectory_and_wait_for_controller(self, trajectory):
         self.GetController().SetPath(trajectory)
