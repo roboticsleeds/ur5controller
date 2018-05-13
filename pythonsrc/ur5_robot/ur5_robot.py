@@ -43,7 +43,7 @@ class UR5_Robot(Robot):
         if not is_in_simulation:
             self.multicontroller = RaveCreateMultiController(self.GetEnv(), "")
             self.SetController(self.multicontroller)
- 
+
         self.manipulator = self.SetActiveManipulator(self.GetManipulators()[0])
 
         # Needed for "find a grasp" function (not parsed using or_urdf hence
@@ -108,6 +108,9 @@ class UR5_Robot(Robot):
 
     def open_gripper(self, kinbody=None):
         self.set_gripper_openning(0)
+
+        if kinbody is not None:
+            self.Release(kinbody)
 
     def close_gripper(self):
         self.set_gripper_openning(255)
