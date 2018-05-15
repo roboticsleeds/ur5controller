@@ -39,8 +39,9 @@ class UR5_Robot(Robot):
         self.robot_name = "UR5"
         self._OPENRAVE_GRIPPER_MAX_VALUE = 0.715584844
         self._ROBOT_GRIPPER_MAX_VALUE = 255
+        self.is_in_simulation = is_in_simulation
 
-        if not is_in_simulation:
+        if not self.is_in_simulation:
             self.multicontroller = RaveCreateMultiController(self.GetEnv(), "")
             self.SetController(self.multicontroller)
 
@@ -107,13 +108,20 @@ class UR5_Robot(Robot):
         self.WaitForController(0)
 
     def open_gripper(self, kinbody=None):
-        self.set_gripper_openning(0)
-
-        if kinbody is not None:
-            self.Release(kinbody)
+        if self.is_in_simulation:
+            self.task_manipulation.ReleaseFingers(target=kinbody)
+            self.WaitForController(0)
+        else:
+            self.set_gripper_openning(0)
+            if kinbody is not None:
+                self.Release(kinbody)
 
     def close_gripper(self):
-        self.set_gripper_openning(255)
+        if self.is_in_simulation:
+            self.task_manipulation.CloseFingers()
+            self.WaitForController(0)
+        else:
+            self.set_gripper_openning(255)
 
     def execute_trajectory_and_wait_for_controller(self, trajectory):
         self.GetController().SetPath(trajectory)
