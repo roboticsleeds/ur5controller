@@ -32,6 +32,7 @@ from openravepy import RaveCreateController
 from openravepy import RaveCreateMultiController
 from openravepy import RaveLogInfo
 from openravepy import Robot
+import time
 
 
 class UR5_Robot(Robot):
@@ -106,6 +107,7 @@ class UR5_Robot(Robot):
 
         self.GetController().SetDesired(dof_values)
         self.WaitForController(0)
+        time.sleep(2)
 
     def open_gripper(self, kinbody=None):
         if self.is_in_simulation:
@@ -126,4 +128,3 @@ class UR5_Robot(Robot):
     def execute_trajectory_and_wait_for_controller(self, trajectory):
         self.GetController().SetPath(trajectory)
         self.WaitForController(0)
-
