@@ -128,3 +128,15 @@ class UR5_Robot(Robot):
     def execute_trajectory_and_wait_for_controller(self, trajectory):
         self.GetController().SetPath(trajectory)
         self.WaitForController(0)
+        time.sleep(2)
+
+
+
+Number of waypoints in trajectory: 325
+About to start executing traj 0.0
+Done executing traj. 32.8261609077
+Done grabbing obj. 32.8271739483
+max_steps: 10
+min_steps: 5
+Before move straight 33.0904839039
+After move straight 33.0950779915
