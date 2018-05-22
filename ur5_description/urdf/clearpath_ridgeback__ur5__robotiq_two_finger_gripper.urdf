@@ -238,7 +238,7 @@
   <link name="ridgeback_base_link"/>
 
   <joint name="base_link_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <origin rpy="0 0 0" xyz="0 0 -0.28"/>
     <parent link="ridgeback_base_link"/>
     <child link="chassis_link"/>
   </joint>
@@ -428,7 +428,7 @@
   <joint name="base_computer_box_joint" type="fixed">
     <parent link="ridgeback_base_link"/>
     <child link="base_computer_box_link"/>
-    <origin rpy="0 0 0" xyz="1.35 2.5 -16.72"/>
+    <origin rpy="0 0 0" xyz="1.35 2.5 -17"/>
   </joint>
 
   <link name="arm_stand_link">
@@ -450,7 +450,7 @@
   <joint name="arm_stand_joint" type="fixed">
     <parent link="mid_mount"/>
     <child link="arm_stand_link"/>
-    <origin rpy="0 0 0" xyz="0.28 0.0 0.0"/>
+    <origin rpy="0 0 0" xyz="0.28 0.0 -0.28"/>
   </joint>
 
   <joint name="arm_stand_to_arm_joint" type="fixed">
