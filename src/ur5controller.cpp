@@ -28,6 +28,8 @@
 #include <actionlib/client/terminal_state.h>
 #include "plugindefs.h"
 #include <openrave/planningutils.h>
+#include <chrono>
+#include <thread>
 
 using namespace std;
 using namespace OpenRAVE;
@@ -223,7 +225,20 @@ class Ur5Controller : public ControllerBase {
         virtual bool IsDone() {
           if (_goal_requested) {
             _goal_requested = false;
-            return _ac->waitForResult();
+
+            bool result = _ac->waitForResult();
+
+            // Due to some problems with the robot driver, the
+            // wait for result returns slightly faster while the
+            // robot is still moving which causes planning errors.
+            // Here we are sleeping for 2 seconds to avoid this
+            // side-effect.
+            if (result) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+                return true;
+            }
+
+            return false;
           }
 
           return true;
