@@ -1,4 +1,12 @@
-# UR5 Controller for OpenRAVE
+## Developers and Contributors
+UR5 OpenRAVE controller was developed by the Robotics Lab in the School of Computing at the University of Leeds. 
+- Author: [Rafael Papallas](https://github.com/papallas).
+- Current maintainor: [Rafael Papallas](https://github.com/papallas).
+
+## License
+UR5 OpenRAVE controller is licensed under GNU General Public License v3.0. The full license is available [here](https://github.com/roboticsleeds/ur5controller/blob/master/LICENSE). 
+
+## UR5 Controller for OpenRAVE
 
 ![Plugin Demo](repo_assets/ur5_example.png "Plugin Demo")
 
@@ -115,17 +123,3 @@ equal to "robotiq_two_finger_" and will not attach the corresponding controller
 if those topics are not being published. This is a defensive mechanism to avoid
 `IsDone()` method of the end-effector gripper returning false and blocking the
 program execution. For more discussion, see [here](https://stackoverflow.com/questions/49552755/openrave-controllerbase-is-blocking-at-the-isdone-method-and-never-returns/49552756#49552756)
-
-## Development Progress
-- The following features are under development:
-  - Robot methods `open_gripper()` and `close_gripper()` are not yet implemented.
-    You can though use the `set_gripper_openning(value)` where value is between 
-    0 and 255 to operate the two finger gripper. 
-  - Robotiq Three Finger Gripper. Is planned to be developed soon.
-   
-## Contributors
-UR5 OpenRAVE controller was developed by the Robotics Lab in the School of 
-Computing at the University of Leeds. 
-
-- Author: [Rafael Papallas](https://github.com/papallas).
-- Current maintainor: [Rafael Papallas](https://github.com/papallas).
