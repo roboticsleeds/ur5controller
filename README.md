@@ -1,3 +1,5 @@
+# UR5 Controller for OpenRAVE
+
 ## Developers and Contributors
 UR5 OpenRAVE controller was developed by the Robotics Lab in the School of Computing at the University of Leeds. 
 - Author: [Rafael Papallas](https://github.com/papallas).
@@ -6,7 +8,7 @@ UR5 OpenRAVE controller was developed by the Robotics Lab in the School of Compu
 ## License
 UR5 OpenRAVE controller is licensed under GNU General Public License v3.0. The full license is available [here](https://github.com/roboticsleeds/ur5controller/blob/master/LICENSE). 
 
-## UR5 Controller for OpenRAVE
+## Overview
 
 ![Plugin Demo](repo_assets/ur5_example.png "Plugin Demo")
 
