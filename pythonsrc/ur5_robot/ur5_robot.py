@@ -109,7 +109,16 @@ class UR5_Robot(Robot):
         self.WaitForController(0)
         time.sleep(2)
 
-    def open_gripper(self, kinbody=None):
+    def _set_dof_value(self, index, value):
+        dof_values = self.GetDOFValues()
+        dof_values[index] = value
+        self.SetDOFValues(dof_values)
+
+    def open_gripper(self, kinbody=None, execute=True):
+        if not execute:
+            self._set_dof_value(3, 0.0)
+            return
+
         if self.is_in_simulation:
             self.task_manipulation.ReleaseFingers(target=kinbody)
             self.WaitForController(0)
@@ -118,7 +127,11 @@ class UR5_Robot(Robot):
             if kinbody is not None:
                 self.Release(kinbody)
 
-    def close_gripper(self):
+    def close_gripper(self, execute=True):
+        if not execute:
+            self._set_dof_value(3, self._OPENRAVE_GRIPPER_MAX_VALUE)
+            return
+
         if self.is_in_simulation:
             self.task_manipulation.CloseFingers()
             self.WaitForController(0)
