@@ -117,6 +117,9 @@ class UR5_Robot(Robot):
     def open_gripper(self, kinbody=None, execute=True):
         if not execute:
             self._set_dof_value(3, 0.0)
+            if kinbody is not None:
+                self.Release(kinbody)
+
             return
 
         if self.is_in_simulation:

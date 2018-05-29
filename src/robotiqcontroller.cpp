@@ -107,7 +107,7 @@ class RobotiqController : public ControllerBase {
             _is_gripper_activated = msg->gACT;
 
             std::vector<double> gripper_value;
-            gripper_value.push_back(RobotValueToModelValue(msg->gPR));
+            gripper_value.push_back(RobotValueToModelValue(msg->gPO));
 
             // Set DOF Values of the joint angles just received from message
             // to the robot in OpenRAVE.
@@ -195,8 +195,8 @@ class RobotiqController : public ControllerBase {
             _command.rACT = 1;
             _command.rGTO = 1;
             _command.rATR = 0;
-            _command.rSP = 255;
-            _command.rFR = 150;
+            _command.rSP = 55;
+            _command.rFR = 0;
 
             publish_command();
             return true;
