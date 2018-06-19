@@ -144,4 +144,4 @@ class UR5_Robot(Robot):
     def execute_trajectory_and_wait_for_controller(self, trajectory):
         self.GetController().SetPath(trajectory)
         self.WaitForController(0)
-        time.sleep(1)
+        time.sleep(2)
