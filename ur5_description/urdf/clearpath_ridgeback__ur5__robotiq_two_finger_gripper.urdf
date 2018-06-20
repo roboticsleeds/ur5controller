@@ -652,7 +652,7 @@
     <child link="wrist_3_link"/>
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.09465"/>
     <axis xyz="0 1 0"/>
-    <limit effort="28.0" lower="-6.2831853" upper="6.2831853" velocity="3.2"/>
+    <limit effort="28.0" lower="-6.26573" upper="6.26573" velocity="3.2"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
 
