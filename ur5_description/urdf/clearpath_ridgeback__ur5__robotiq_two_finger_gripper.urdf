@@ -414,13 +414,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="-1.55 -2.5 17.3"/>
       <geometry>
-        <box size="0.4 0.6 0.6"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/visual/computer_box.stl"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="-1.55 -2.5 17.3"/>
       <geometry>
-          <box size="0.4 0.6 0.6"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/visual/computer_box.stl"/>
       </geometry>
     </collision>
   </link>
@@ -434,14 +434,14 @@
   <link name="arm_stand_link">
     <visual>
       <geometry>
-        <cylinder length="0.459" radius="0.1"/>
+          <mesh filename="package://ur5controller/ur5_description/arm/meshes/visual/arm_stand.stl"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0.2295"/>
+      <origin rpy="1.57 0 0" xyz="0 0 0.2295"/>
       <material name="white"/>
     </visual>
     <collision>
       <geometry>
-        <cylinder length="0.459" radius="0.1"/>
+        <mesh filename="package://ur5controller/ur5_description/arm/meshes/visual/arm_stand.stl"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0.2295"/>
     </collision>
