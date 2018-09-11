@@ -45,11 +45,49 @@ class Ur5Controller : public ControllerBase {
             _penv = penv;
             _paused = false;
             _initialized = false;
-            _velocity_maximum_limit_per_joint = 0.2;
+            _maximum_velocity_limit_per_joint = 0.2;
 
             // Keeps track of whether a client asked from this class to send a
             // a goal to the action server.
             _goal_requested = false;
+        }
+
+        /**
+            Initialiser when the robot is attached to the controller.
+
+            Subscribes to the topic /joint_states that listens to changes to the
+            robot joints and calls a callback to act on the new values. Will
+            also crient an action client to send trajectories to the action
+            server.
+        */
+        virtual bool Init(RobotBasePtr robot, const std::vector<int> &dofindices, int nControlTransformation) {
+            _probot = robot;
+
+            if (!!_probot) {
+                _dofindices = dofindices;
+                _nControlTransformation = nControlTransformation;
+            }
+
+            // Add velocity limits.
+            OpenRAVE::EnvironmentMutex::scoped_lock lockenv(_penv->GetMutex());
+            vector<dReal> velocity_limits;
+
+            for(int i=0; i<7; i++) {
+                velocity_limits.push_back(_maximum_velocity_limit_per_joint);
+            }
+
+            _probot->SetDOFVelocityLimits(velocity_limits);
+
+            _pn = new ros::NodeHandle();
+
+            // Subscribe to the topic that the robot publishes changes to joint values.
+            _joint_angles_sub = _pn->subscribe("/joint_states", 1, &Ur5Controller::JointStateCallback, this);
+            _initialized = true;
+
+            _ac = new TrajClient("follow_joint_trajectory", true);
+            _ac->waitForServer();
+
+            return true;
         }
 
         /**
@@ -75,44 +113,6 @@ class Ur5Controller : public ControllerBase {
             _probot->SetDOFValues(joint_angles,
                                   KinBody::CLA_CheckLimitsSilent,
                                   _dofindices);
-        }
-
-        /**
-            Initialiser when the robot is attached to the controller.
-
-            Subscribes to the topic /joint_states that listens to changes to the
-            robot joints and calls a callback to act on the new values. Will
-            also crient an action client to send trajectories to the action
-            server.
-        */
-        virtual bool Init(RobotBasePtr robot, const std::vector<int> &dofindices, int nControlTransformation) {
-            _probot = robot;
-
-            if (!!_probot) {
-                _dofindices = dofindices;
-                _nControlTransformation = nControlTransformation;
-            }
-
-            // Add velocity limits.
-            OpenRAVE::EnvironmentMutex::scoped_lock lockenv(_penv->GetMutex());
-            vector<dReal> velocity_limits;
-
-            for(int i=0; i<7; i++) {
-                velocity_limits.push_back(_velocity_maximum_limit_per_joint);
-            }
-
-            _probot->SetDOFVelocityLimits(velocity_limits);
-
-            _pn = new ros::NodeHandle();
-
-            // Subscribe to the topic that the robot publishes changes to joint values.
-            _joint_angles_sub = _pn->subscribe("/joint_states", 1, &Ur5Controller::JointStateCallback, this);
-            _initialized = true;
-
-            _ac = new TrajClient("follow_joint_trajectory", true);
-            _ac->waitForServer();
-
-            return true;
         }
 
         virtual void Reset(int options) {
@@ -258,7 +258,7 @@ class Ur5Controller : public ControllerBase {
         bool _paused;
         bool _goal_requested;
         int _nControlTransformation;
-        dReal _velocity_maximum_limit_per_joint;
+        dReal _maximum_velocity_limit_per_joint;
 
         std::vector<int> _dofindices;
 
