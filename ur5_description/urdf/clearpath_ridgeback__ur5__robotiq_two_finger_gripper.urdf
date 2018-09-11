@@ -443,7 +443,7 @@
       <geometry>
         <mesh filename="package://ur5controller/ur5_description/arm/meshes/visual/arm_stand.stl"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0.2295"/>
+      <origin rpy="1.57 0 0" xyz="0 0 0.2295"/>
     </collision>
   </link>
 
