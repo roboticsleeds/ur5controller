@@ -811,6 +811,11 @@
         <box size="0.03 0.04 0.06"/>
       </geometry>
     </collision>
+    <inertial>
+      <origin rpy="1.57079632679 0 1.57079632679" xyz="0 0 0"/>
+      <mass value="1.267"/>
+      <inertia ixx="0.0288" ixy="2.20484e-6" ixz="-1.3145e-5" iyy="0.4324" iyz="1.8944e-3" izz="0.4130"/>
+    </inertial>
   </link>
 
   <!-- right finger -->
@@ -834,6 +839,11 @@
         <box size="0.02 0.04 0.02"/>
       </geometry>
     </collision>
+    <inertial>
+      <origin rpy="1.57079632679 0 1.57079632679" xyz="0 0 0"/>
+      <mass value="1.267"/>
+      <inertia ixx="0.0288" ixy="2.20484e-6" ixz="-1.3145e-5" iyy="0.4324" iyz="1.8944e-3" izz="0.4130"/>
+    </inertial>
   </link>
 
   <joint name="simple_gripper_right_coupler_joint" type="fixed">
@@ -854,6 +864,11 @@
         <box size="0.03 0.065 0.02"/>
       </geometry>
     </collision>
+    <inertial>
+      <origin rpy="1.57079632679 0 1.57079632679" xyz="0 0 0"/>
+      <mass value="1.267"/>
+      <inertia ixx="0.0288" ixy="2.20484e-6" ixz="-1.3145e-5" iyy="0.4324" iyz="1.8944e-3" izz="0.4130"/>
+    </inertial>
   </link>
 
   <joint name="simple_gripper_right_follower_joint" type="revolute">
@@ -877,6 +892,11 @@
         <box size="0.02 0.015 0.048"/>
       </geometry>
     </collision>
+    <inertial>
+      <origin rpy="1.57079632679 0 1.57079632679" xyz="0 0 0"/>
+      <mass value="1.267"/>
+      <inertia ixx="0.0288" ixy="2.20484e-6" ixz="-1.3145e-5" iyy="0.4324" iyz="1.8944e-3" izz="0.4130"/>
+    </inertial>
   </link>
 
   <joint name="simple_gripper_right_pad_joint" type="fixed">
@@ -896,6 +916,11 @@
         <box size="0.02 0.008 0.036"/>
       </geometry>
     </collision>
+    <inertial>
+      <origin rpy="1.57079632679 0 1.57079632679" xyz="0 0 0"/>
+      <mass value="1.267"/>
+      <inertia ixx="0.0288" ixy="2.20484e-6" ixz="-1.3145e-5" iyy="0.4324" iyz="1.8944e-3" izz="0.4130"/>
+    </inertial>
   </link>
 
   <joint name="simple_gripper_right_spring_link_joint" type="revolute">
@@ -919,6 +944,11 @@
         <box size="0.04 0.02 0.065"/>
       </geometry>
     </collision>
+    <inertial>
+      <origin rpy="1.57079632679 0 1.57079632679" xyz="0 0 0"/>
+      <mass value="1.267"/>
+      <inertia ixx="0.0288" ixy="2.20484e-6" ixz="-1.3145e-5" iyy="0.4324" iyz="1.8944e-3" izz="0.4130"/>
+    </inertial>
   </link>
 
   <!-- left finger -->
@@ -943,6 +973,11 @@
         <box size="0.02 0.04 0.02"/>
       </geometry>
     </collision>
+    <inertial>
+      <origin rpy="1.57079632679 0 1.57079632679" xyz="0 0 0"/>
+      <mass value="1.267"/>
+      <inertia ixx="0.0288" ixy="2.20484e-6" ixz="-1.3145e-5" iyy="0.4324" iyz="1.8944e-3" izz="0.4130"/>
+    </inertial>
   </link>
 
   <joint name="simple_gripper_left_coupler_joint" type="fixed">
@@ -963,6 +998,11 @@
         <box size="0.03 0.065 0.02"/>
       </geometry>
     </collision>
+    <inertial>
+      <origin rpy="1.57079632679 0 1.57079632679" xyz="0 0 0"/>
+      <mass value="1.267"/>
+      <inertia ixx="0.0288" ixy="2.20484e-6" ixz="-1.3145e-5" iyy="0.4324" iyz="1.8944e-3" izz="0.4130"/>
+    </inertial>
   </link>
 
   <joint name="simple_gripper_left_follower_joint" type="revolute">
@@ -986,6 +1026,11 @@
         <box size="0.02 0.015 0.048"/>
       </geometry>
     </collision>
+    <inertial>
+      <origin rpy="1.57079632679 0 1.57079632679" xyz="0 0 0"/>
+      <mass value="1.267"/>
+      <inertia ixx="0.0288" ixy="2.20484e-6" ixz="-1.3145e-5" iyy="0.4324" iyz="1.8944e-3" izz="0.4130"/>
+    </inertial>
   </link>
 
   <joint name="simple_gripper_left_pad_joint" type="fixed">
@@ -1005,6 +1050,11 @@
         <box size="0.02 0.008 0.036"/>
       </geometry>
     </collision>
+    <inertial>
+      <origin rpy="1.57079632679 0 1.57079632679" xyz="0 0 0"/>
+      <mass value="1.267"/>
+      <inertia ixx="0.0288" ixy="2.20484e-6" ixz="-1.3145e-5" iyy="0.4324" iyz="1.8944e-3" izz="0.4130"/>
+    </inertial>
   </link>
 
   <joint name="simple_gripper_left_spring_link_joint" type="revolute">
@@ -1028,6 +1078,11 @@
         <box size="0.04 0.02 0.065"/>
       </geometry>
     </collision>
+    <inertial>
+      <origin rpy="1.57079632679 0 1.57079632679" xyz="0 0 0"/>
+      <mass value="1.267"/>
+      <inertia ixx="0.0288" ixy="2.20484e-6" ixz="-1.3145e-5" iyy="0.4324" iyz="1.8944e-3" izz="0.4130"/>
+    </inertial>
   </link>
 
   <transmission name="simple_gripper_right_driver_trans">
