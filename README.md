@@ -35,7 +35,7 @@ Clearpath Ridgeback moving base.
 - You need to install and configure another OpenRAVE plugin called `or_urdf` this plugin is available [here](https://github.com/personalrobotics/or_urdf). I have written a blog post on 
 how to install this plugin if you struggle to find a solution, find the tutorial [here](http://computingstories.com/robotics%20stories/installing-or_urdf-openrave-plugin.html).
 - **(OPTIONAL)** Install the Robotiq controller.
-  1. `cd ~/catkin/src`
+  1. `cd ~/catkin_ws/src`
   2. `git clone git@github.com:ros-industrial/robotiq.git`
   3. `cd robotiq`
   4. `git checkout indigo-devel`
