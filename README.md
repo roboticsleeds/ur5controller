@@ -125,3 +125,14 @@ equal to "robotiq_two_finger_" and will not attach the corresponding controller
 if those topics are not being published. This is a defensive mechanism to avoid
 `IsDone()` method of the end-effector gripper returning false and blocking the
 program execution. For more discussion, see [here](https://stackoverflow.com/questions/49552755/openrave-controllerbase-is-blocking-at-the-isdone-method-and-never-returns/49552756#49552756)
+
+## Troubleshooting
+
+### TypeError: argument of type 'Poly' is not iterable
+If you get this error while the IK are being generated, then you probably have a version of sympy > 0.7.1. Downgrade your sympy version to 0.7.1:
+
+```
+pip install --upgrade sympy==0.7.1
+```
+
+This should fix this issue.
