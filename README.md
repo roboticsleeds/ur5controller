@@ -67,6 +67,7 @@ test the controller on the real robot.
 With the Python class in place, creating a UR5 robot in OpenRAVE is super easy:
 
 ```python
+import IPython
 from ur5_factory import UR5_Factory
 ur5_factory = UR5_Factory()
 
@@ -82,11 +83,14 @@ env, robot = ur5_factory.create_ur5_and_env(is_simulation=True,
 
 # The above is equivalent to the following (the `create_ur5_and_env` has set to defaults the values used above):
 env, robot = ur5_factory.create_ur5_and_env()
+IPython.embed()
 ```
 
 ## Controller explained
 1. Load the robot in OpenRAVE using the URDF plugin:
 ```python
+import IPython
+
 env = Environment()
 env.Load('test_env.xml')
 env.SetViewer('qtcoin')
@@ -112,6 +116,8 @@ hand_controller = RaveCreateController(env, 'robotiqcontroller')
 
 multicontroller.AttachController(robot_controller, [2, 1, 0, 4, 5, 6], 0)
 multicontroller.AttachController(hand_controller, [3], 0)
+
+IPython.embed()
 ```
 
 You are now set. The OpenRAVE robot should update as you change the configuration
