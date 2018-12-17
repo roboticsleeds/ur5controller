@@ -45,7 +45,7 @@ how to install this plugin if you struggle to find a solution, find the tutorial
   8. `catkin_make`
 
 ## Installation
-- Go to your catkin worksapce e.g `cd ~/catkin_ws/src` and clone this repository: `git clone git@github.com:papallas/ur5controller.git`
+- Go to your catkin worksapce e.g `cd ~/catkin_ws/src` and clone this repository: `git clone git@github.com:roboticsleeds/ur5controller.git`
 - Add the following line in your `~/.bashrc` file located under your home 
 directory by running the following command in the terminal: `echo 
 'export OPENRAVE_PLUGINS=$OPENRAVE_PLUGINS:~/catkin_ws/devel/share/openrave-0.9/plugins' >> ~/.bashrc`
