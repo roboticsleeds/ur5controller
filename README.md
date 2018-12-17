@@ -31,6 +31,8 @@ Clearpath Ridgeback moving base.
 
 ## 5. Installation
 
+You can either get this controller using a Singularity container or by building the controller as a catkin package on your host machine. The advantage of using a singularity container over building it on your host machine is that you can have a different Ubuntu and ROS version on your host machine and have UR5 Controller within a singularity container that runs Ubuntu 14.04 and ROS Indigo. For example you can have a host machine with Ubuntu 18.04 and run UR5 Controller with the Singularity container. 
+
 ### 5.1 Using Singularity container
 The easiest way to get up and running with this controller is to use our Singularity container. 
 
