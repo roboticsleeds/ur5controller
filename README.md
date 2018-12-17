@@ -1,14 +1,14 @@
 # UR5 Controller for OpenRAVE
 
-## Developers and Contributors
+## 1. Developers and Contributors
 UR5 OpenRAVE controller was developed by the Robotics Lab in the School of Computing at the University of Leeds. 
 - Author: [Rafael Papallas](http://rpapallas.com).
 - Current maintainor: [Rafael Papallas](http://rpapallas.com).
 
-## License
+## 2. License
 UR5 OpenRAVE controller is licensed under GNU General Public License v3.0. The full license is available [here](https://github.com/roboticsleeds/ur5controller/blob/master/LICENSE). 
 
-## Overview
+## 3. Overview
 
 ![Plugin Demo](repo_assets/ur5_example.png "Plugin Demo")
 
@@ -23,13 +23,24 @@ There is a test program that demonstrates this functionality under
 OpenRAVE and then let you control the UR5 robot above a table (move left, right, 
 forward, backwards and rotate the gripper clockwise and anti-clockwise).
 
-## Includes
+## 4. Includes
 This repository includes the following:
 - The custom written controller for OpenRAVE and UR5 robot.
 - The URDF and SRDF files for UR5 itself, Robotiq Two-Finger Gripper, and 
 Clearpath Ridgeback moving base.
 
-## Dependencies
+## 5. Installation
+
+### 5.1 Using Singularity container
+The easiest way to get up and running with this controller is to use our Singularity container. 
+
+1. Install Singularity on your machine by following [this](https://www.sylabs.io/guides/3.0/user-guide/quick_start.html#quick-installation-steps).
+2. Then, follow the instructions from [here](https://github.com/roboticsleeds/ur5controller_singularity).
+
+### 5.2 Built from source on your own machine
+If you wish to build this control on your host machine, you can find the instructions below.
+
+### 5.2.1 Dependencies
 - [ur_modern_driver](https://github.com/ThomasTimm/ur_modern_driver) needs to be installed on the computer that controls the robot and you need to run `roslaunch ur_modern_driver ur5_bringup.launch robot_ip:=THE_IP_OF_UR5_ROBOT`.
 - You need to install the [openrave_catkin](https://github.com/personalrobotics/openrave_catkin).
 - You need to install and configure another OpenRAVE plugin called `or_urdf` this plugin is available [here](https://github.com/personalrobotics/or_urdf). I have written a blog post on 
@@ -44,7 +55,7 @@ how to install this plugin if you struggle to find a solution, find the tutorial
   7. `cd ~/catkin_ws`
   8. `catkin_make`
 
-## Installation
+### 5.2.2 Installation
 - Go to your catkin worksapce e.g `cd ~/catkin_ws/src` and clone this repository: `git clone git@github.com:roboticsleeds/ur5controller.git`
 - Add the following line in your `~/.bashrc` file located under your home 
 directory by running the following command in the terminal: `echo 
@@ -60,7 +71,7 @@ echo 'export PYTHONPATH=$PYTHONPATH:~/catkin_ws/src/ur5controller/pythonsrc/ur5_
 This will let Python know where the Python classes for 
 creating UR5 robot instances in OpenRAVE are.
 
-## Testing the controller
+## 6. Testing the controller
 There is a file called `control_ur5.py` under `scripts` that you can run and 
 test the controller on the real robot.
 
@@ -86,7 +97,7 @@ env, robot = ur5_factory.create_ur5_and_env()
 IPython.embed()
 ```
 
-## Controller explained
+## 7. Controller explained
 1. Load the robot in OpenRAVE using the URDF plugin:
 ```python
 import IPython
@@ -124,7 +135,7 @@ You are now set. The OpenRAVE robot should update as you change the configuratio
 of the actual robot, and should also execute trajectories from OpenRAVE to 
 the actual robot.
 
-## Other Notes
+## 8. Other Notes
 - The package will check (in ur5_factory.py) if certain topics are being published
 (i.e `CModelRobotInput` and `CModelRobotOutput`) if you chose a gripper name 
 equal to "robotiq_two_finger_" and will not attach the corresponding controller
@@ -132,9 +143,9 @@ if those topics are not being published. This is a defensive mechanism to avoid
 `IsDone()` method of the end-effector gripper returning false and blocking the
 program execution. For more discussion, see [here](https://stackoverflow.com/questions/49552755/openrave-controllerbase-is-blocking-at-the-isdone-method-and-never-returns/49552756#49552756)
 
-## Troubleshooting
+## 9. Troubleshooting
 
-### TypeError: argument of type 'Poly' is not iterable
+### 9.1 TypeError: argument of type 'Poly' is not iterable
 If you get this error while the IK are being generated, then you probably have a version of sympy > 0.7.1. Downgrade your sympy version to 0.7.1:
 
 ```
