@@ -129,7 +129,7 @@ class UR5_Factory(object):
                                               srdf_path)
 
         if not self._a_ros_topic_exist_with_the_name("joint_states"):
-            is_simulation = False
+            is_simulation = True
 
         # Add class UR5_Robot to the robot.
         self.robot.__class__ = UR5_Robot
