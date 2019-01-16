@@ -128,7 +128,7 @@ class UR5_Factory(object):
                                               has_force_torque_sensor, urdf_path,
                                               srdf_path)
 
-        if not a_ros_topic_exist_with_the_name("joint_states"):
+        if not self._a_ros_topic_exist_with_the_name("joint_states"):
             is_simulation = False
 
         # Add class UR5_Robot to the robot.
