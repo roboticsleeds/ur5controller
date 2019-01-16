@@ -128,6 +128,9 @@ class UR5_Factory(object):
                                               has_force_torque_sensor, urdf_path,
                                               srdf_path)
 
+        if not a_ros_topic_exist_with_the_name("joint_states"):
+            is_simulation = False
+
         # Add class UR5_Robot to the robot.
         self.robot.__class__ = UR5_Robot
         self.robot.__init__(is_simulation)
@@ -152,7 +155,7 @@ class UR5_Factory(object):
         if gripper_name == "robotiq_two_finger":
             controller_name = "robotiqcontroller"
 
-        if self._is_rostopic_name_exists("CModelRobotInput"):
+        if self._a_ros_topic_exist_with_the_name("CModelRobotInput"):
             self.robot.attach_controller(name=controller_name, dof_indices=[3])
             RaveLogInfo("robotiq_two_finger controller attached successfully.")
         else:
@@ -164,26 +167,16 @@ class UR5_Factory(object):
         # This is a defensive mechanism to avoid IsDone() method of the
         # end-effector controller block the program execution. For further
         # discussion, see this thread: https://stackoverflow.com/questions/49552755/openrave-controllerbase-is-blocking-at-the-isdone-method-and-never-returns/49552756#49552756
-        if self._is_rostopic_name_exists("joint_states"):
+        if self._a_ros_topic_exist_with_the_name("joint_states"):
             self.robot.attach_controller(name="ur5controller",
                                          dof_indices=[2, 1, 0, 4, 5, 6])
-
             RaveLogInfo("UR5 controller attached successfully.")
         else:
             RaveLogWarn("UR5 Controller not attached to robot. Required " \
                         "topics not being published, rolling back to " \
                         "simulation.")
 
-    def _is_rostopic_name_exists(self, topic_name):
-        """
-        Will check if a given ROS topic name is being published.
-
-        Args:
-            topic_name: The ROS topic name to check.
-        Returns:
-            True if the topic name exist (being published already),
-            false otherwise.
-        """
+    def _a_ros_topic_exist_with_the_name(self, topic_name):
         # The ROS topic name always start with '/' character.
         if topic_name[0] != "/":
             topic_name = "/" + topic_name
@@ -196,7 +189,6 @@ class UR5_Factory(object):
                 return True
 
         return False
-
 
     def _get_file_name_from_specification(self, gripper_name, has_ridgeback,
                                           has_force_torque_sensor):
