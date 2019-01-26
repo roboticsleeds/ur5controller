@@ -73,7 +73,7 @@ class UR5_Robot(Robot):
         return self.GetDOFValues()[3] == 0
 
     def is_gripper_fully_closed(self):
-        return self.GetDOFValues()[3] == self._OPENRAVE_GRIPPER_MAX_VALUE
+        return abs(self.GetDOFValues()[3] - self._OPENRAVE_GRIPPER_MAX_VALUE) <= 0.00001
 
     def attach_controller(self, name, dof_indices):
         controller = RaveCreateController(self.GetEnv(), name)
