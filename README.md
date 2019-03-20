@@ -155,3 +155,8 @@ pip install --upgrade sympy==0.7.1
 ```
 
 This should fix this issue.
+
+### 9.2 Executing the trajectory on the real robot causes unintended actions
+**Issue:** While OpenRAVE generates a trajectory that is smooth and valid in simulation during real execution the robot is strangely executing the trajectory.
+
+**Possible solution:** We came across this issue and the problem is probably down to the UR modern driver. When UR modern driver is installed using `apt-get` the problem appeared. The solution was to install UR modern driver as a catkin package (make sure to checkout the branch `kinetic-devel` although is kinetic is also working with indigo).
