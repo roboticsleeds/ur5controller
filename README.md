@@ -147,7 +147,7 @@ program execution. For more discussion, see [here](https://stackoverflow.com/que
 
 ## 9. Troubleshooting
 
-### 9.1 TypeError: argument of type 'Poly' is not iterable
+### 9.1 RuntimeError: maximum recursion depth exceeded while calling a Python object
 If you get this error while the IK are being generated, then you probably have a version of sympy > 0.7.1. Downgrade your sympy version to 0.7.1:
 
 ```
@@ -156,7 +156,16 @@ pip install --upgrade sympy==0.7.1
 
 This should fix this issue.
 
-### 9.2 Executing the trajectory on the real robot causes unintended actions
+### 9.2 TypeError: argument of type 'Poly' is not iterable
+If you get this error while the IK are being generated, then you probably have a version of sympy > 0.7.1. Downgrade your sympy version to 0.7.1:
+
+```
+pip install --upgrade sympy==0.7.1
+```
+
+This should fix this issue.
+
+### 9.3 Executing the trajectory on the real robot causes unintended actions
 **Issue:** While OpenRAVE generates a trajectory that is smooth and valid in simulation during real execution the robot is strangely executing the trajectory.
 
 **Possible solution:** We came across this issue and the problem is probably down to the UR modern driver. When UR modern driver is installed using `apt-get` the problem appeared. The solution was to install UR modern driver as a catkin package (make sure to checkout the branch `kinetic-devel` although is kinetic is also working with indigo).
