@@ -12,6 +12,17 @@ UR5 OpenRAVE controller is licensed under GNU General Public License v3.0. The f
 
 ![Plugin Demo](repo_assets/ur5_example.png "Plugin Demo")
 
+<p float="left">
+    <img src="repo_assets/ridgeback_ur5_fts150_gripper.png" width="100" /> 
+    <img src="repo_assets/ridgeback_ur5_gripper.png" width="100" /> 
+    <img src="repo_assets/ridgeback_ur5.png" width="100" />
+</p>
+
+Currently we support different models (we only provide controllers for the UR5 and the two-finger gripper in this project):
+- Clearpath Ridgeback + UR5 + Force Torque Sensor 150 + RobotiQ Two Finger Gripper
+- Clearpath Ridgeback + UR5 + RobotiQ Two Finger Gripper
+- Clearpath Ridgeback + UR5
+
 This controller will listen to ROS topic that publishes the joint values of the 
 UR5 robot in real time and will visualise the current state of a UR5 robot in OpenRAVE.
 
