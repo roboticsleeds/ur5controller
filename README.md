@@ -10,8 +10,6 @@ UR5 OpenRAVE controller is licensed under GNU General Public License v3.0. The f
 
 ## 3. Overview
 
-![Plugin Demo](repo_assets/ur5_example.png "Plugin Demo")
-
 <p float="left">
     <img src="repo_assets/ridgeback_ur5_fts150_gripper.png" width="250" /> 
     <img src="repo_assets/ridgeback_ur5_gripper.png" width="250" /> 
