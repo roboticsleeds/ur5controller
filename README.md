@@ -108,6 +108,8 @@ env, robot = ur5_factory.create_ur5_and_env()
 IPython.embed()
 ```
 
+If you would like to use the model with no gripper, then you need to pass `None` to the `gripper_name` argument.
+
 ## 7. Controller explained
 1. Load the robot in OpenRAVE using the URDF plugin:
 ```python
