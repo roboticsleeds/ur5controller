@@ -1,7 +1,7 @@
 # UR5 Controller for OpenRAVE
 
 ## 1. Developers and Contributors
-UR5 OpenRAVE controller was developed by the Robotics Lab in the School of Computing at the University of Leeds. 
+UR5 OpenRAVE controller was developed by the [Robot Manipulation Lab](https://artificial-intelligence.leeds.ac.uk/robot-manipulation/) in the School of Computing at the University of Leeds.
 - Author: [Rafael Papallas](http://rpapallas.com).
 - Current maintainor: [Rafael Papallas](http://rpapallas.com).
 
