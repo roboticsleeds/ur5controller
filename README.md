@@ -177,18 +177,21 @@ the actual robot.
 <details>
 <summary>Checking ROS topics for attaching controllers</summary>
 </br>
+
 This package will check (in ur5_factory.py) if certain topics are being published
 (i.e `CModelRobotInput` and `CModelRobotOutput`) if you chose a gripper name 
 equal to "robotiq_two_finger_" and will not attach the corresponding controller
 if those topics are not being published. This is a defensive mechanism to avoid
 `IsDone()` method of the end-effector gripper returning false and blocking the
 program execution. For more discussion, see [here](https://stackoverflow.com/questions/49552755/openrave-controllerbase-is-blocking-at-the-isdone-method-and-never-returns/49552756#49552756)
+
 </details>
     
 ## 9. Troubleshooting
 <details>
 <summary>RuntimeError: maximum recursion depth exceeded while calling a Python object</summary>
 </br>
+
 If you get this error while the IK are being generated, then you probably have a version of sympy > 0.7.1. Downgrade your sympy version to 0.7.1:
 
 ```
@@ -201,6 +204,7 @@ This should fix this issue.
 <details>
 <summary>TypeError: argument of type 'Poly' is not iterable</summary>
 </br>
+
 If you get this error while the IK are being generated, then you probably have a version of sympy > 0.7.1. Downgrade your sympy version to 0.7.1:
 
 ```
@@ -213,7 +217,9 @@ This should fix this issue.
 <details>
 <summary>Executing the trajectory on the real robot causes unintended actions</summary>
 </br>
+
 **Issue:** While OpenRAVE generates a trajectory that is smooth and valid in simulation during real execution the robot is strangely executing the trajectory.
 
 **Possible solution:** We came across this issue and the problem is probably down to the UR modern driver. When UR modern driver is installed using `apt-get` the problem appeared. The solution was to install UR modern driver as a catkin package (make sure to checkout the branch `kinetic-devel` although is kinetic is also working with indigo).
+
 </details>
