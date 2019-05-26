@@ -1,15 +1,5 @@
 # UR5 Controller for OpenRAVE
 
-## 1. Developers and Contributors
-UR5 OpenRAVE controller was developed by the [Robot Manipulation Lab](https://artificial-intelligence.leeds.ac.uk/robot-manipulation/) in the School of Computing at the University of Leeds.
-- Author: [Rafael Papallas](http://rpapallas.com).
-- Current maintainor: [Rafael Papallas](http://rpapallas.com).
-
-## 2. License
-UR5 OpenRAVE controller is licensed under GNU General Public License v3.0. The full license is available [here](https://github.com/roboticsleeds/ur5controller/blob/master/LICENSE). 
-
-## 3. Overview
-
 <p float="left">
     <img src="repo_assets/ridgeback_ur5_fts150_gripper.png" width="250" /> 
     <img src="repo_assets/ridgeback_ur5_gripper.png" width="250" /> 
@@ -32,13 +22,21 @@ There is a test program that demonstrates this functionality under
 OpenRAVE and then let you control the UR5 robot above a table (move left, right, 
 forward, backwards and rotate the gripper clockwise and anti-clockwise).
 
-## 4. Includes
+## 1. Developers and Contributors
+UR5 OpenRAVE controller was developed by the [Robot Manipulation Lab](https://artificial-intelligence.leeds.ac.uk/robot-manipulation/) in the School of Computing at the University of Leeds.
+- Author: [Rafael Papallas](http://rpapallas.com).
+- Current maintainor: [Rafael Papallas](http://rpapallas.com).
+
+## 2. License
+UR5 OpenRAVE controller is licensed under GNU General Public License v3.0. The full license is available [here](https://github.com/roboticsleeds/ur5controller/blob/master/LICENSE). 
+
+## 3. Includes
 This repository includes the following:
 - The custom written controller for OpenRAVE and UR5 robot.
 - The URDF and SRDF files for UR5 itself, Robotiq Two-Finger Gripper, and 
 Clearpath Ridgeback moving base.
 
-## 5. Installation
+## 4. Installation
 
 You can either get this controller using a Singularity container or by building the controller as a catkin package on your host machine. The advantage of using a singularity container over building it on your host machine is that you can have a different Ubuntu and ROS version on your host machine and have UR5 Controller within a singularity container that runs Ubuntu 14.04 and ROS Indigo. For example you can have a host machine with Ubuntu 18.04 and run UR5 Controller with the Singularity container. 
 
@@ -88,7 +86,7 @@ This will let Python know where the Python classes for
 creating UR5 robot instances in OpenRAVE are.
 </details>
 
-## 6. Testing the controller
+## 5. Testing the controller
 There is a file called `control_ur5.py` under `scripts` that you can run and 
 test the controller on the real robot.
 
@@ -121,7 +119,7 @@ IPython.embed()
 If you would like to use the model with no gripper, then you need to pass `None` to the `gripper_name` argument.
 </details>
 
-## 7. Controller explained
+## 6. Controller explained
 1. Load the robot in OpenRAVE using the URDF plugin:
 
 <details>
@@ -173,7 +171,7 @@ of the actual robot, and should also execute trajectories from OpenRAVE to
 the actual robot.
 </details>
 
-## 8. Other Notes
+## 7. Other Notes
 <details>
 <summary>Checking ROS topics for attaching controllers</summary>
 </br>
@@ -187,7 +185,7 @@ program execution. For more discussion, see [here](https://stackoverflow.com/que
 
 </details>
     
-## 9. Troubleshooting
+## 8. Troubleshooting
 <details>
 <summary>RuntimeError: maximum recursion depth exceeded while calling a Python object</summary>
 </br>
