@@ -42,16 +42,21 @@ Clearpath Ridgeback moving base.
 
 You can either get this controller using a Singularity container or by building the controller as a catkin package on your host machine. The advantage of using a singularity container over building it on your host machine is that you can have a different Ubuntu and ROS version on your host machine and have UR5 Controller within a singularity container that runs Ubuntu 14.04 and ROS Indigo. For example you can have a host machine with Ubuntu 18.04 and run UR5 Controller with the Singularity container. 
 
-### 5.1 Using Singularity container
+<details>
+<summary>Using Singularity container</summary>
+</br>
 The easiest way to get up and running with this controller is to use our Singularity container. 
 
 1. Install Singularity on your machine by following [this](https://www.sylabs.io/guides/3.0/user-guide/quick_start.html#quick-installation-steps).
 2. Then, follow the instructions from [here](https://github.com/roboticsleeds/ur5controller_singularity).
+</details>
 
-### 5.2 Built from source on your own machine
+<details>
+<summary>Built from source on your own machine</summary>
+</br>
 If you wish to build this control on your host machine, you can find the instructions below.
 
-### 5.2.1 Dependencies
+#### Dependencies
 - [ur_modern_driver](https://github.com/ThomasTimm/ur_modern_driver) needs to be installed on the computer that controls the robot and you need to run `roslaunch ur_modern_driver ur5_bringup.launch robot_ip:=THE_IP_OF_UR5_ROBOT`.
 - You need to install the [openrave_catkin](https://github.com/personalrobotics/openrave_catkin).
 - You need to install and configure another OpenRAVE plugin called `or_urdf` this plugin is available [here](https://github.com/personalrobotics/or_urdf). I have written a blog post on 
@@ -66,7 +71,7 @@ how to install this plugin if you struggle to find a solution, find the tutorial
   7. `cd ~/catkin_ws`
   8. `catkin_make`
 
-### 5.2.2 Installation
+#### Installation
 - Go to your catkin worksapce e.g `cd ~/catkin_ws/src` and clone this repository: `git clone git@github.com:roboticsleeds/ur5controller.git`
 - Add the following line in your `~/.bashrc` file located under your home 
 directory by running the following command in the terminal: `echo 
@@ -81,6 +86,7 @@ echo 'export PYTHONPATH=$PYTHONPATH:~/catkin_ws/src/ur5controller/pythonsrc/ur5_
 ```
 This will let Python know where the Python classes for 
 creating UR5 robot instances in OpenRAVE are.
+</details>
 
 ## 6. Testing the controller
 There is a file called `control_ur5.py` under `scripts` that you can run and 
@@ -157,8 +163,9 @@ if those topics are not being published. This is a defensive mechanism to avoid
 program execution. For more discussion, see [here](https://stackoverflow.com/questions/49552755/openrave-controllerbase-is-blocking-at-the-isdone-method-and-never-returns/49552756#49552756)
 
 ## 9. Troubleshooting
-
-### 9.1 RuntimeError: maximum recursion depth exceeded while calling a Python object
+<details>
+<summary>RuntimeError: maximum recursion depth exceeded while calling a Python object</summary>
+</br>
 If you get this error while the IK are being generated, then you probably have a version of sympy > 0.7.1. Downgrade your sympy version to 0.7.1:
 
 ```
@@ -166,8 +173,11 @@ pip install --upgrade sympy==0.7.1
 ```
 
 This should fix this issue.
+</details>
 
-### 9.2 TypeError: argument of type 'Poly' is not iterable
+<details>
+<summary>TypeError: argument of type 'Poly' is not iterable</summary>
+</br>
 If you get this error while the IK are being generated, then you probably have a version of sympy > 0.7.1. Downgrade your sympy version to 0.7.1:
 
 ```
@@ -175,8 +185,12 @@ pip install --upgrade sympy==0.7.1
 ```
 
 This should fix this issue.
+</details>
 
-### 9.3 Executing the trajectory on the real robot causes unintended actions
+<details>
+<summary>Executing the trajectory on the real robot causes unintended actions</summary>
+</br>
 **Issue:** While OpenRAVE generates a trajectory that is smooth and valid in simulation during real execution the robot is strangely executing the trajectory.
 
 **Possible solution:** We came across this issue and the problem is probably down to the UR modern driver. When UR modern driver is installed using `apt-get` the problem appeared. The solution was to install UR modern driver as a catkin package (make sure to checkout the branch `kinetic-devel` although is kinetic is also working with indigo).
+</details>
