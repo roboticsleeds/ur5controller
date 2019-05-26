@@ -94,6 +94,10 @@ test the controller on the real robot.
 
 With the Python class in place, creating a UR5 robot in OpenRAVE is super easy:
 
+<details>
+<summary>Show code</summary>
+</br>
+
 ```python
 import IPython
 from ur5_factory import UR5_Factory
@@ -115,9 +119,15 @@ IPython.embed()
 ```
 
 If you would like to use the model with no gripper, then you need to pass `None` to the `gripper_name` argument.
+</details>
 
 ## 7. Controller explained
 1. Load the robot in OpenRAVE using the URDF plugin:
+
+<details>
+<summary>Show code</summary>
+</br>
+
 ```python
 import IPython
 
@@ -135,8 +145,16 @@ with env:
 
 env.Add(robot, True)
 ```
+
+</details>
+
 2. You now need to attach the controllers (UR5 and the Robotiq controllers) to
-the robot using the `MultiController`:
+the robot using the `MultiController`.
+
+<details>
+<summary>Show code</summary>
+</br>
+
 ```python
 multicontroller = RaveCreateMultiController(env, "")
 robot.SetController(multicontroller)
@@ -153,15 +171,20 @@ IPython.embed()
 You are now set. The OpenRAVE robot should update as you change the configuration
 of the actual robot, and should also execute trajectories from OpenRAVE to 
 the actual robot.
+</details>
 
 ## 8. Other Notes
-- The package will check (in ur5_factory.py) if certain topics are being published
+<details>
+<summary>Checking ROS topics for attaching controllers</summary>
+</br>
+This package will check (in ur5_factory.py) if certain topics are being published
 (i.e `CModelRobotInput` and `CModelRobotOutput`) if you chose a gripper name 
 equal to "robotiq_two_finger_" and will not attach the corresponding controller
 if those topics are not being published. This is a defensive mechanism to avoid
 `IsDone()` method of the end-effector gripper returning false and blocking the
 program execution. For more discussion, see [here](https://stackoverflow.com/questions/49552755/openrave-controllerbase-is-blocking-at-the-isdone-method-and-never-returns/49552756#49552756)
-
+</details>
+    
 ## 9. Troubleshooting
 <details>
 <summary>RuntimeError: maximum recursion depth exceeded while calling a Python object</summary>
