@@ -14,6 +14,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Author: Rafael Papallas (rpapallas.com)
+
+"""Extends OpenRAVE Robot
+
+This class is an extension of OpenRAVE's Robot to include some handy functions.
+"""
 
 __author__ = "Rafael Papallas"
 __authors__ = ["Rafael Papallas"]
@@ -53,11 +60,15 @@ class UR5_Robot(Robot):
         self.manipulator.SetChuckingDirection([1.0])
         self.manipulator.SetLocalToolDirection([1.0, 0, 0])
 
-        self.ikmodel = databases.inversekinematics.InverseKinematicsModel(self, iktype=IkParameterization.Type.Transform6D)
+        self.ikmodel = databases.inversekinematics.InverseKinematicsModel(
+            self, iktype=IkParameterization.Type.Transform6D
+        )
         if not self.ikmodel.load():
-            RaveLogInfo("The IKModel for UR5 robot is now being generated. " \
-                        "Please be patient, this will take a while " \
-                        "(sometimes up to 30 minutes)...")
+            RaveLogInfo(
+                "The IKModel for UR5 robot is now being generated. "
+                "Please be patient, this will take a while "
+                "(sometimes up to 30 minutes)..."
+            )
 
             self.ikmodel.autogenerate()
 
@@ -91,6 +102,16 @@ class UR5_Robot(Robot):
         return False
 
     def set_gripper_openning(self, value):
+        """
+        Opens/Closes the gripper by a desired value.
+
+        Args:
+            value: Opens/Closes the finger.
+
+        Raises:
+            ValueError: If the value is out of bounds [0, 255].
+
+        """
         if value < 0 or value > 255:
             raise ValueError("Gripper value should be between 0 and 255.")
 
@@ -101,7 +122,11 @@ class UR5_Robot(Robot):
         # To make this method more user-friendly, the value is expected
         # to be between 0 and 255, then we map it down to 0 to 0.87266444
         # and send it to the gripper controller.
-        model_value = self._OPENRAVE_GRIPPER_MAX_VALUE / self._ROBOT_GRIPPER_MAX_VALUE * abs(value);
+        model_value = (
+            self._OPENRAVE_GRIPPER_MAX_VALUE
+            / self._ROBOT_GRIPPER_MAX_VALUE
+            * abs(value)
+        )
         dof_values = self.GetDOFValues()
         dof_values[3] = model_value
 
@@ -115,6 +140,19 @@ class UR5_Robot(Robot):
         self.SetDOFValues(dof_values)
 
     def open_gripper(self, kinbody=None, execute=True):
+        """
+        Opens end-effector's fingers.
+
+        OpenRAVE Kinbodies can be attached to the end-effector, if you want
+        to release an attached kinbody after the fingers are opened, then pass
+        that kinbody in this function.
+
+        Args:
+            kinbody: Pass an OpenRAVE Kinbody to release after the fingers are
+                     opened.
+            execute: By default is set to True. Pass False if you want to avoid
+                     execution.
+        """
         if not execute:
             self._set_dof_value(3, 0.0)
             if kinbody is not None:
@@ -131,6 +169,13 @@ class UR5_Robot(Robot):
                 self.Release(kinbody)
 
     def close_gripper(self, execute=True):
+        """
+        Closes end-effector's fingers.
+
+        Args:
+            execute: By default is set to True. Pass False if you want to avoid
+                     execution.
+        """
         if not execute:
             self._set_dof_value(3, self._OPENRAVE_GRIPPER_MAX_VALUE)
             return
@@ -142,6 +187,12 @@ class UR5_Robot(Robot):
             self.set_gripper_openning(255)
 
     def execute_trajectory_and_wait_for_controller(self, trajectory):
+        """
+        Executes a trajectory and waits for the controller to finish.
+
+        Args:
+            trajectory: An OpenRAVE trajectory to execute.
+        """
         self.GetController().SetPath(trajectory)
         self.WaitForController(0)
         time.sleep(2)
