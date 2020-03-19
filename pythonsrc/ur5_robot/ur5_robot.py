@@ -43,11 +43,12 @@ import time
 
 
 class UR5_Robot(Robot):
-    def __init__(self, is_in_simulation):
+    def __init__(self, is_in_simulation, has_gripper):
         self.robot_name = "UR5"
         self._OPENRAVE_GRIPPER_MAX_VALUE = 0.715584844
         self._ROBOT_GRIPPER_MAX_VALUE = 255
         self.is_in_simulation = is_in_simulation
+        self._has_gripper = has_gripper
 
         if not self.is_in_simulation:
             self.multicontroller = RaveCreateMultiController(self.GetEnv(), "")
@@ -55,14 +56,16 @@ class UR5_Robot(Robot):
 
         self.manipulator = self.SetActiveManipulator(self.GetManipulators()[0])
 
-        # Needed for "find a grasp" function (not parsed using or_urdf hence
-        # needs manual setting)
-        self.manipulator.SetChuckingDirection([1.0])
-        self.manipulator.SetLocalToolDirection([1.0, 0, 0])
+        if self._has_gripper:
+            # Needed for "find a grasp" function (not parsed using or_urdf hence
+            # needs manual setting)
+            self.manipulator.SetChuckingDirection([1.0])
+            self.manipulator.SetLocalToolDirection([1.0, 0, 0])
 
         self.ikmodel = databases.inversekinematics.InverseKinematicsModel(
             self, iktype=IkParameterization.Type.Transform6D
         )
+
         if not self.ikmodel.load():
             RaveLogInfo(
                 "The IKModel for UR5 robot is now being generated. "
@@ -81,9 +84,19 @@ class UR5_Robot(Robot):
         return self.manipulator.GetTransform()
 
     def is_gripper_fully_open(self):
+        if not self._has_gripper:
+            raise Exception(
+                "You are trying to use a gripper function while a gripper is not available on your UR5 robot."
+            )
+
         return self.GetDOFValues()[3] == 0
 
     def is_gripper_fully_closed(self):
+        if not self._has_gripper:
+            raise Exception(
+                "You are trying to use a gripper function while a gripper is not available on your UR5 robot."
+            )
+
         return abs(self.GetDOFValues()[3] - self._OPENRAVE_GRIPPER_MAX_VALUE) <= 0.00001
 
     def attach_controller(self, name, dof_indices):
@@ -112,6 +125,11 @@ class UR5_Robot(Robot):
             ValueError: If the value is out of bounds [0, 255].
 
         """
+        if not self._has_gripper:
+            raise Exception(
+                "You are trying to use a gripper function while a gripper is not available on your UR5 robot."
+            )
+
         if value < 0 or value > 255:
             raise ValueError("Gripper value should be between 0 and 255.")
 
@@ -153,6 +171,11 @@ class UR5_Robot(Robot):
             execute: By default is set to True. Pass False if you want to avoid
                      execution.
         """
+        if not self._has_gripper:
+            raise Exception(
+                "You are trying to use a gripper function while a gripper is not available on your UR5 robot."
+            )
+
         if not execute:
             self._set_dof_value(3, 0.0)
             if kinbody is not None:
@@ -176,6 +199,12 @@ class UR5_Robot(Robot):
             execute: By default is set to True. Pass False if you want to avoid
                      execution.
         """
+
+        if not self._has_gripper:
+            raise Exception(
+                "You are trying to use a gripper function while a gripper is not available on your UR5 robot."
+            )
+
         if not execute:
             self._set_dof_value(3, self._OPENRAVE_GRIPPER_MAX_VALUE)
             return
