@@ -57,8 +57,8 @@ If you wish to build this control on your host machine, you can find the instruc
 #### Dependencies
 - [ur_modern_driver](https://github.com/ThomasTimm/ur_modern_driver) needs to be installed on the computer that controls the robot and you need to run `roslaunch ur_modern_driver ur5_bringup.launch robot_ip:=THE_IP_OF_UR5_ROBOT`.
 - You need to install the [openrave_catkin](https://github.com/personalrobotics/openrave_catkin).
-- You need to install and configure another OpenRAVE plugin called `or_urdf` this plugin is available [here](https://github.com/personalrobotics/or_urdf). I have written a blog post on 
-how to install this plugin if you struggle to find a solution, find the tutorial [here](http://computingstories.com/robotics%20stories/installing-or_urdf-openrave-plugin.html).
+- You need to install and configure another OpenRAVE plugin called `or_urdf` this plugin is available [here](https://github.com/personalrobotics/or_urdf). I have written a small guide on 
+how to install this plugin if you struggle to find a solution, find the tutorial [here](https://gist.github.com/rpapallas/171cad0e881769647d0851b8780cc545).
 - **(OPTIONAL)** Install the Robotiq controller.
   1. `cd ~/catkin_ws/src`
   2. `git clone git@github.com:ros-industrial/robotiq.git`
